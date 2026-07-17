@@ -1,0 +1,2218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TARSONS PRODUCTS LIMITED — HSE Portal</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Import map to safely resolve standard Firebase package imports directly in the browser -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js"
+      }
+    }
+  </script>
+
+  <style>
+  :root{
+    --bg-dark:#050b18;
+    --bg-dark-2:#0a1a2f;
+    --panel:#f4faf9;
+    --muted:#5b7a84;
+    --accent:#12b76a;
+    --accent-2:#0ec9b0;
+    --accent-3:#0b7dbf;
+    --text-dark:#0b2027;
+    --danger:#e5484d;
+    --warning:#f5a524;
+    --border:#e6edf0;
+    --radius:16px;
+    --radius-sm:10px;
+    --shadow-sm:0 2px 8px rgba(10,26,47,.06);
+    --shadow-md:0 10px 30px rgba(10,26,47,.12);
+    --shadow-lg:0 20px 60px rgba(4,10,24,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--text-dark);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(14,201,176,.18), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(11,125,191,.25), transparent 55%),
+      linear-gradient(180deg,var(--bg-dark) 0%, var(--bg-dark-2) 100%);
+    -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;
+  }
+  ::selection{background:var(--accent-2);color:#fff}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
+  h1,h2,h3,h4,h5{font-weight:800;letter-spacing:-.01em;margin:0 0 8px}
+  h2{font-size:22px} h3{font-size:17px} h4{font-size:15px}
+  p{line-height:1.55}
+  a{color:var(--accent-3)}
+  .container{max-width:1200px;margin:0 auto;padding:16px;width:100%}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:60;color:white;padding:12px 0;
+    background:linear-gradient(100deg,var(--accent-3),var(--accent-2) 70%);
+    box-shadow:0 8px 24px rgba(2,10,20,.35);
+    transition:box-shadow .25s ease, padding .25s ease;
+    backdrop-filter:blur(10px);
+  }
+  header.scrolled{padding:8px 0;box-shadow:0 12px 34px rgba(2,10,20,.55)}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 8px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{
+    width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#ffffff,#d8fff2);
+    display:flex;align-items:center;justify-content:center;color:var(--accent-3);font-weight:900;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);font-size:14px;letter-spacing:-.5px;
+  }
+  .site-title .name{font-weight:800;font-size:16px;line-height:1.1;letter-spacing:.5px}
+  .site-title .subject{font-size:11px;opacity:.85;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  nav ul{display:flex;gap:2px;list-style:none;padding:0;margin:0;flex-wrap:wrap}
+  nav a{
+    color:rgba(255,255,255,0.92);text-decoration:none;padding:9px 13px;border-radius:9px;
+    font-weight:600;font-size:13.5px;transition:all .18s ease;display:inline-block;
+  }
+  nav a:hover{background:rgba(255,255,255,0.16);transform:translateY(-1px)}
+
+  .bell-wrapper{position:relative;cursor:pointer;margin-right:2px;display:flex;align-items:center;
+    width:38px;height:38px;justify-content:center;border-radius:10px;transition:background .18s;}
+  .bell-wrapper:hover{background:rgba(255,255,255,.15)}
+  .bell-icon{font-size:19px;color:white}
+  .bell-badge{
+    position:absolute;top:2px;right:2px;background:var(--danger);color:white;border-radius:50%;
+    width:16px;height:16px;font-size:9.5px;display:none;align-items:center;justify-content:center;
+    font-weight:800;border:2px solid var(--accent-3);
+  }
+
+  /* ---------- Buttons ---------- */
+  button{cursor:pointer;padding:10px 16px;border-radius:10px;border:none;font-weight:700;
+    font-family:inherit;font-size:13.5px;transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;}
+  button:active{transform:scale(.97)}
+  .primary{background:linear-gradient(115deg,var(--accent),var(--accent-2));color:white;
+    box-shadow:0 8px 18px rgba(18,183,106,.28);}
+  .primary:hover{box-shadow:0 10px 24px rgba(18,183,106,.4);transform:translateY(-1px)}
+  .ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.35);color:white;
+    height:38px;padding:0 15px;border-radius:9px;}
+  .ghost:hover{background:rgba(255,255,255,0.18)}
+  .ghost-dark{background:#fff;border:1px solid var(--border);color:var(--text-dark);}
+  .ghost-dark:hover{background:#f4f6f7}
+  .btn-sm{padding:6px 11px;font-size:12px;border-radius:7px;margin-left:4px;}
+  .btn-danger{background:linear-gradient(115deg,#ff6b6b,var(--danger));color:white;}
+  .btn-danger:hover{opacity:.9}
+  .btn-action{background:linear-gradient(115deg,#3aa0e8,var(--accent-3));color:white;}
+  .btn-action:hover{opacity:.92}
+
+  /* ---------- Admin-only visibility ---------- */
+  .admin-only{display:none}
+  body.is-admin .admin-only{display:revert}
+  body.is-admin li.admin-only{display:list-item}
+  body.is-admin div.admin-only,
+  body.is-admin span.admin-only{display:block}
+
+  /* ---------- Cards / layout ---------- */
+  .card{
+    background:linear-gradient(180deg,var(--panel),#ffffff);padding:20px;border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);margin-bottom:16px;border:1px solid rgba(255,255,255,.6);
+    animation:fadeUp .35s ease both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  main section{animation:fadeUp .3s ease both}
+  .hero{max-width:1200px;margin:20px auto;display:grid;grid-template-columns:1fr;gap:18px;padding:12px}
+  .tiles{display:flex;gap:12px;flex-wrap:wrap}
+  .tile{
+    flex:1 1 130px;padding:14px 16px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(18,183,106,0.1), rgba(11,125,191,0.08));
+    border:1px solid rgba(18,183,106,.15);transition:transform .18s;
+  }
+  .tile:hover{transform:translateY(-2px)}
+  .big{font-size:24px;font-weight:800;background:linear-gradient(115deg,var(--accent-3),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .small{color:var(--muted);font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+
+  .factory-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:14px;margin-top:16px}
+  .factory-card{
+    background:white;border:1px solid var(--border);border-radius:14px;padding:16px;
+    box-shadow:var(--shadow-sm);transition:transform .18s, box-shadow .18s;
+  }
+  .factory-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .factory-title{font-weight:800;color:var(--accent-3);margin-bottom:10px;border-bottom:2px solid var(--accent-2);padding-bottom:6px;font-size:15px}
+  .stat-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-dark)}
+  .stat-row strong{color:var(--accent)}
+
+  /* ---------- Forms ---------- */
+  form .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  input,select,textarea{
+    width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border);background:white;
+    font-size:14px;font-family:inherit;transition:border-color .15s, box-shadow .15s;color:var(--text-dark);
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--accent-2);box-shadow:0 0 0 3px rgba(14,201,176,.18);
+  }
+  textarea{min-height:80px;resize:vertical}
+  label{font-size:13px}
+
+  .admin-only[style*="background"], div.admin-only{border-radius:14px !important}
+
+  /* ---------- Gallery ---------- */
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .gallery-item{position:relative;border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow-sm);aspect-ratio:1/1;cursor:pointer;background:#eef3f4;transition:transform .2s ease, box-shadow .2s ease}
+  .gallery-item:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+  .gallery-item:hover img{transform:scale(1.08)}
+  .gallery-item .gal-del{position:absolute;top:6px;right:6px;background:rgba(20,20,20,.65);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;z-index:2}
+  .gallery-item .gal-del:hover{background:var(--danger)}
+  .gallery img{width:100%;height:130px;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform .2s, box-shadow .2s;box-shadow:var(--shadow-sm)}
+  .gallery img:hover{transform:scale(1.03);box-shadow:var(--shadow-md)}
+  .gal-del{position:absolute;top:6px;right:6px;background:var(--danger);color:white;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;cursor:pointer;font-weight:bold;font-size:12px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+  /* ---------- Policy cards ---------- */
+  .pdf-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:16px;margin-top:16px}
+  .policy-card{background:white;border-radius:14px;overflow:hidden;border:1px solid var(--border);transition:transform .2s, box-shadow .2s;position:relative;cursor:pointer;display:flex;flex-direction:column;height:100%;box-shadow:var(--shadow-sm)}
+  .policy-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
+  .policy-icon{height:100px;background:linear-gradient(135deg,#f4f8f7,#eaf3f1);display:flex;align-items:center;justify-content:center;font-size:40px}
+  .policy-content{padding:15px;flex-grow:1}
+  .policy-title{font-weight:700;color:var(--accent-3);font-size:15px;margin-bottom:5px}
+  .policy-sub{font-size:12px;color:var(--muted)}
+  .policy-del{position:absolute;top:6px;right:6px;background:var(--danger);color:white;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+  /* ---------- Tables ---------- */
+  table{width:100%;border-collapse:collapse;color:var(--text-dark);margin-top:10px;font-size:13.5px}
+  th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left}
+  th{background:rgba(11,125,191,.06);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:var(--accent-3)}
+  tbody tr{transition:background .15s}
+  tbody tr:hover{background:rgba(18,183,106,.05)}
+
+  /* ---------- Modals ---------- */
+  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal{
+    position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,20,0.72);display:none;
+    align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);
+    animation:overlayIn .18s ease both;padding:16px;
+  }
+  @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+  #loginBox, #siteStatsBox, #noticeBox, #ptwBox, #notificationBox, #ppeIssueBox{
+    width:100%;max-width:500px;background:white;padding:22px;border-radius:18px;color:var(--text-dark);
+    max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .22s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  @keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .status-pill.status-ok{background:rgba(18,183,106,.15);color:#0d8a51}
+  .status-pill.status-due-soon{background:rgba(245,165,36,.18);color:#9a6300}
+  .status-pill.status-overdue{background:rgba(229,72,77,.16);color:var(--danger)}
+  tr.status-overdue{background:rgba(229,72,77,.06)}
+  tr.status-due-soon{background:rgba(245,165,36,.07)}
+  .admin-tabs{display:flex;gap:8px;margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .admin-tabs::-webkit-scrollbar{display:none}
+  .admin-tab-btn{padding:10px 20px;cursor:pointer;font-weight:700;border-radius:999px;font-size:13.5px;color:var(--muted);transition:all .15s;white-space:nowrap;flex:0 0 auto;background:rgba(0,0,0,.03)}
+  .admin-tab-btn:hover{color:var(--text-dark);background:rgba(0,0,0,.06)}
+  .admin-tab-btn.active{background:linear-gradient(115deg,var(--accent-3),var(--accent-2));color:white;box-shadow:0 6px 16px rgba(11,125,191,.3)}
+
+  .notice-board-banner{background:linear-gradient(100deg,#f7931e,#e6672c);color:white;padding:14px 16px;border-radius:14px;margin-bottom:16px;box-shadow:0 8px 22px rgba(230,90,30,.3)}
+  .notice-item{background:rgba(255,255,255,.15);padding:8px 10px;border-radius:8px;margin-top:6px;font-size:13.5px}
+  .status-badge{padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:800;color:white;letter-spacing:.3px;text-transform:uppercase}
+  .status-safe{background:var(--accent)}
+  .status-warning{background:var(--warning)}
+  .status-expired{background:var(--danger)}
+  .expiry-alert-card{border-left:5px solid var(--danger);background:#fff5f5;padding:14px;margin-top:16px;position:relative}
+
+  /* ---------- Risk Matrix ---------- */
+  .risk-high{background-color:#ffe6e6;border-left:4px solid #ff4d4d}
+  .risk-med{background-color:#fff4e6;border-left:4px solid #ff9f43}
+  .risk-low{background-color:#e6fff2;border-left:4px solid #2ecc71}
+
+  /* ---------- Mobile nav ---------- */
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr}
+    #desktopNav{display:none}
+    #mobileMenuBtn{display:flex !important}
+    .gallery{grid-template-columns:repeat(2,1fr)}
+    form .two-cols{grid-template-columns:1fr}
+    .container{padding:12px}
+    .card{padding:16px;border-radius:14px}
+    button, input, select, textarea{font-size:16px} /* prevents iOS auto-zoom on focus */
+    button{min-height:42px}
+    .admin-tab-btn{padding:9px 16px;font-size:13px}
+    #cloudSyncBadge{display:none !important}
+  }
+  @media (max-width:560px){
+    h2{font-size:19px} h3{font-size:16px}
+    .tiles{gap:8px}
+    .tile{flex-basis:100%}
+    .two-cols{gap:8px}
+    table{font-size:12.5px}
+    th,td{padding:7px 6px !important}
+    .site-title .name{font-size:14px}
+    .site-title .subject{font-size:9.5px}
+    .logo{width:40px;height:40px;font-size:12px}
+  }
+  #mobileMenu{
+    display:none;position:fixed;left:0;top:0;right:0;bottom:0;
+    background:linear-gradient(180deg,var(--bg-dark),var(--bg-dark-2));z-index:998;padding-top:80px;
+    flex-direction:column;animation:overlayIn .2s ease both;
+  }
+  #mobileNavList{list-style:none;padding:0;width:100%;max-width:420px;margin:0 auto}
+  #mobileNavList a{
+    display:block;color:white;padding:16px;margin:4px 14px;border-radius:12px;text-decoration:none;
+    text-align:center;font-weight:700;font-size:15px;background:rgba(255,255,255,.05);transition:background .15s;
+  }
+  #mobileNavList a:hover{background:rgba(255,255,255,.14)}
+  #mobileMenuBtn{
+    display:none;width:38px;height:38px;border-radius:10px;align-items:center;justify-content:center;
+    font-size:18px;background:rgba(255,255,255,.12);
+  }
+
+  /* ---------- AI assistant ---------- */
+  #aiAssistantBtn{
+    position:fixed;bottom:25px;right:25px;width:60px;height:60px;
+    background:linear-gradient(135deg,var(--accent-3),var(--accent-2));
+    border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 10px 28px rgba(0,0,0,.35);z-index:10000;transition:all .3s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  #aiAssistantBtn:hover{transform:scale(1.1) rotate(5deg)}
+  #aiAssistantBox{
+    position:fixed;bottom:95px;right:25px;width:360px;height:500px;background:#fff;
+    border-radius:20px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;overflow:hidden;
+    z-index:10000;border:1px solid rgba(0,0,0,.08);animation:modalIn .2s ease both;
+  }
+  @media (max-width:480px){ #aiAssistantBox{width:92vw;right:4vw;height:70vh;bottom:90px} }
+  #aiHeader{background:linear-gradient(100deg,var(--accent-3),var(--accent-2));color:white;padding:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+  #aiMessages{flex:1;padding:15px;overflow-y:auto;background:#f0f4f7;display:flex;flex-direction:column;gap:12px}
+  .ai-msg{max-width:85%;padding:10px 14px;border-radius:15px;font-size:13.5px;line-height:1.5}
+  .ai-user{align-self:flex-end;background:var(--accent-3);color:white;border-bottom-right-radius:3px}
+  .ai-bot{align-self:flex-start;background:white;color:#333;border-bottom-left-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .typing{font-style:italic;color:#888;font-size:12px;display:none;margin-bottom:10px}
+  #aiInputArea{padding:12px;border-top:1px solid #eee;display:flex;gap:8px;background:white}
+  #aiInput{flex:1;border:1.5px solid #ddd;border-radius:25px;padding:10px 15px;outline:none;transition:border .2s}
+  #aiInput:focus{border-color:var(--accent-2)}
+  #aiInputArea button{background:var(--accent-2);color:white;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+</style>
+</head>
+<body>
+
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h3>Sign in</h3>
+      <p class="small">Admin: <b>admin</b> / <b>admin123</b></p>
+      <input id="loginUser" placeholder="Username or Employee ID" style="margin-bottom:10px">
+      <input id="loginPass" type="password" placeholder="Password" style="margin-bottom:10px">
+      <div style="text-align:right">
+        <button class="ghost-dark" onclick="document.getElementById('loginOverlay').style.display='none'">Cancel</button>
+        <button class="primary" onclick="doLogin()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mobileMenu"><ul id="mobileNavList"></ul></div>
+
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo">TPL</div>
+        <div class="site-title"><div class="name">TARSONS </div>
+        <div class="subtitle"><div class="subject">HSE Portal</div></div></div>
+      </div>
+      <nav id="desktopNav">
+        <ul>
+          <li><a href="#" onclick="navTo('home')">Home</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('dashboard')">Incidents</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('hira')">HIRA</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('waste')">Waste Mgmt</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('ppe')">PPE</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('ptw')">PTW</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('training')">Training</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('legal')">Legal</a></li>
+          <li><a href="#" onclick="navTo('policies')">Policies</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('adminSection')" class="admin-only">Admin</a></li>
+        </ul>
+      </nav>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="bell-wrapper" onclick="openNotifications()">
+           <span class="bell-icon">🔔</span>
+           <span id="bellBadge" class="bell-badge">0</span>
+        </div>
+        
+        <span id="cloudSyncBadge" style="display:none;font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;margin-right:4px;align-items:center;">● Syncing…</span>
+        <div id="userBadge" style="font-size:13px;font-weight:600;color:white;"></div>
+        <button class="ghost" id="loginBtn" onclick="showLogin()">Login</button>
+        <button class="ghost" id="logoutBtn" onclick="doLogout()" style="display:none">Logout</button>
+        <button class="ghost" id="mobileMenuBtn" onclick="toggleMobileMenu()" style="display:none">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+       <div>
+        <div class="card">
+            <div id="noticeBoardDisplay" class="notice-board-banner">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <h3 style="margin:0; color:white;">🚨 Global Notice Board</h3>
+                    <div class="admin-only">
+                        <button class="primary btn-sm" onclick="document.getElementById('noticeBoardModal').style.display='flex'" style="background:white; color:var(--text-dark);">Manage</button>
+                    </div>
+                </div>
+                 <div id="activeNoticesList"></div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2>HSE Overview</h2>
+              <div class="admin-only"><button class="btn-action btn-sm" onclick="openSiteStats()">Update Factory Stats</button></div>
+            </div>
+            
+            <div class="tiles" style="margin-top:15px">
+              <div class="tile"><div class="small">Safe Days</div><div class="big" id="safeDays">0</div></div>
+              <div class="tile"><div class="small">Total Reports</div><div class="big" id="totalReports">0</div></div>
+              <div class="tile"><div class="small">Accident Ratio</div><div class="big" id="accRatio">0%</div></div>
+              <div class="tile"><div class="small">Open PTWs</div><div class="big" id="openPTWs">0</div></div>
+            </div>
+            
+            <div id="factoriesContainer" class="factory-grid"></div>
+            
+            <div id="expiryAlertSection"></div>
+            
+            <div style="margin-top:20px; height: 300px;">
+              <h3>Incident Trend</h3>
+              <canvas id="incidentChart"></canvas>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hira" style="display:none" class="container">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>HIRA (Risk Assessment)</h2>
+          <button class="ghost-dark" onclick="printHIRA()">🖨️ Print</button>
+        </div>
+        <p class="small" style="color:var(--muted)">Hazard Identification and Risk Assessment Register</p>
+
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
+          <h4>Add New Activity Assessment</h4>
+          <form onsubmit="addHIRA(event)">
+            <div class="two-cols">
+              <input id="hiraActivity" placeholder="Activity / Process Name" required>
+              <input id="hiraHazard" placeholder="Potential Hazard (e.g. Electric Shock)" required>
+            </div>
+            <div class="two-cols" style="margin-top:5px">
+              <select id="hiraRisk" required>
+                <option value="">Initial Risk Level</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <input id="hiraControls" placeholder="Control Measures (e.g. PPE, LOTO)" required>
+            </div>
+             <div class="two-cols" style="margin-top:5px">
+               <select id="hiraFactory" required></select>
+                <button type="submit" class="primary">Add to Register</button>
+             </div>
+          </form>
+        </div>
+        
+        <div style="overflow-x:auto">
+          <table id="hiraTable"><thead><tr><th>Factory</th><th>Activity</th><th>Hazard</th><th>Risk Level</th><th>Controls</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="waste" style="display:none" class="container">
+      <div class="card">
+        <h2>Waste Management Log</h2>
+        <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+            <div class="tile" style="flex:1"><div class="small">Current Hazardous Stock (Kg)</div><div class="big" id="wasteHazTotal">0</div></div>
+            <div class="tile" style="flex:1"><div class="small">Current Recyclable Stock (Kg)</div><div class="big" id="wasteRecTotal">0</div></div>
+        </div>
+        <p class="small" style="margin:-6px 0 12px;color:var(--muted);text-transform:none;font-weight:500;">Stock figures are net totals: every "Stored" entry adds to stock, every "Disposed" entry subtracts from it.</p>
+
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+          <h4>Log Waste Entry</h4>
+          <form onsubmit="addWaste(event)">
+            <div class="two-cols">
+              <input id="wasteDate" type="date" required>
+              <select id="wasteFactory" required></select>
+            </div>
+            <div class="two-cols" style="margin-top:5px">
+              <select id="wasteEntryType" required>
+                <option value="">Stored or Disposed?</option>
+                <option value="Stored">Stored (adds to stock)</option>
+                <option value="Disposed">Disposed (removes from stock)</option>
+              </select>
+              <select id="wasteType" required>
+                <option value="">Select Waste Type</option>
+                <option value="Hazardous">Hazardous (Chemical/Sludge)</option>
+                <option value="Plastic">Plastic / Packaging</option>
+                <option value="Bio-Medical">Bio-Medical</option>
+                <option value="E-Waste">E-Waste</option>
+                <option value="General">General/Canteen</option>
+              </select>
+            </div>
+            <div class="two-cols" style="margin-top:5px">
+              <input id="wasteQty" type="number" step="0.01" min="0.01" placeholder="Quantity (KG)" required>
+              <input id="wasteMethod" placeholder="Storage Location / Disposal Vendor" required>
+            </div>
+            <button type="submit" class="primary" style="margin-top:5px">Log Entry</button>
+          </form>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table id="wasteTable"><thead><tr><th>Date</th><th>Factory</th><th>Type</th><th>Entry</th><th>Qty (Kg)</th><th>Location / Vendor</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="adminSection" style="display:none" class="container">
+      <div class="card">
+        <h2>Admin Management</h2>
+        <div class="admin-tabs">
+            <div class="admin-tab-btn active" id="tabExt" onclick="switchAdminTab('ext')">Fire Extinguishers</div>
+            <div class="admin-tab-btn" id="tabAudit" onclick="switchAdminTab('audit')">Safety Audits</div>
+            <div class="admin-tab-btn" id="tabUsers" onclick="switchAdminTab('users')">Manage Users</div>
+        </div>
+        <div id="extContainer">
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+                <h4>Add New Extinguisher</h4>
+                <form onsubmit="addExtinguisher(event)">
+                      <div class="two-cols">
+                        <select id="extFactory" required></select>
+                        <input id="extID" placeholder="Extinguisher ID / No" required>
+                    </div>
+                     <div class="two-cols" style="margin-top:5px">
+                        <select id="extType" required>
+                             <option value="">Select Type</option>
+                            <option>CO2</option><option>ABC Powder</option><option>DCP</option><option>Water</option><option>Foam</option>
+                        </select>
+                        <input id="extCap" placeholder="Capacity (e.g. 4.5kg, 9L)" required>
+                    </div>
+                    <div class="two-cols" style="margin-top:5px">
+                        <input id="extLast" type="date" title="Last Service Date" required>
+                        <input id="extDue" type="date" title="Next Due Date" required>
+                    </div>
+                    <button type="submit" class="primary" style="margin-top:5px">Add to Register</button>
+                </form>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Register (Location-wise)</h3>
+                <div style="display:flex; gap:10px;">
+                    <select id="extFilter" onchange="renderExtinguisherList()" style="width:150px">
+                        <option value="">All Locations</option>
+                    </select>
+                    <button class="ghost-dark" onclick="printExtRegister()">Print Report</button>
+                 </div>
+            </div>
+            <div style="overflow-x:auto"><table id="extTable"><thead><tr><th>Factory</th><th>ID</th><th>Type</th><th>Capacity</th><th>Due Date</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        
+        <div id="auditContainer" style="display:none">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>Safety Audit Records</h3>
+                <button class="primary" onclick="toggleAuditForm()">Conduct New Audit</button>
+            </div>
+            <div id="auditFormBox" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; display:none;">
+              <h4>New Audit</h4>
+              <form onsubmit="addAudit(event)">
+                <div class="two-cols">
+                  <input id="auditDate" type="date" required>
+                  <select id="auditFactory" required></select>
+                 </div>
+                <div class="two-cols" style="margin-top:5px">
+                  <input id="auditAuditor" placeholder="Auditor" required>
+                  <input id="auditScore" type="number" min="0" max="100" placeholder="Score (0-100)" required readonly>
+                </div>
+                <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                  <h5 style="margin:6px 0">Safety Checklist (10 items)</h5>
+                  <div id="auditChecklist" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <label><input type="checkbox" class="audit-item"> Housekeeping adequate</label>
+                    <label><input type="checkbox" class="audit-item"> PPE availability</label>
+                    <label><input type="checkbox" class="audit-item"> Machine guards in place</label>
+                    <label><input type="checkbox" class="audit-item"> Electrical panels labeled</label>
+                    <label><input type="checkbox" class="audit-item"> Fire exits unobstructed</label>
+                    <label><input type="checkbox" class="audit-item"> Emergency lighting functional</label>
+                    <label><input type="checkbox" class="audit-item"> First aid kits stocked</label>
+                    <label><input type="checkbox" class="audit-item"> LOTO procedures followed</label>
+                    <label><input type="checkbox" class="audit-item"> Chemical storage compliant</label>
+                    <label><input type="checkbox" class="audit-item"> Spill kits available</label>
+                  </div>
+                </div>
+                 <div style="text-align:right;margin-top:8px">
+                  <button type="button" class="ghost-dark btn-sm" onclick="toggleAuditForm(false)">Cancel</button>
+                  <button type="submit" class="primary btn-sm">Save Audit</button>
+                </div>
+              </form>
+            </div>
+            <div style="overflow-x:auto"><table id="auditTable"><thead><tr><th>Date</th><th>Factory</th><th>Auditor</th><th>Score</th><th>Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="usersContainer" style="display:none">
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
+              <h4>Add New User</h4>
+              <form onsubmit="addUser(event)">
+                <div class="two-cols">
+                   <input id="newUsername" placeholder="Name" required>
+                  <select id="newRole" required>
+                    <option value="">Select Role</option>
+                    <option value="admin">admin</option>
+                    <option value="user">user</option>
+                  </select>
+                </div>
+                <div class="two-cols" style="margin-top:10px">
+                    <input id="newEmpId" placeholder="Employee ID (Login ID)" required>
+                    <input id="newPassword" placeholder="Password" required>
+                </div>
+                <div style="text-align:right;margin-top:8px">
+                  <button type="submit" class="primary btn-sm">Add User</button>
+                </div>
+              </form>
+            </div>
+            <h3>Users</h3>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <ul id="usersList" style="list-style: none; padding: 0;"></ul>
+            </div>
+        </div>
+      </div>
+    </section>
+  
+    <section id="dashboard" style="display:none" class="container">
+      <div class="card">
+        <h2>Incident Register</h2>
+
+        <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid var(--accent);">
+          <h4>Report / Add Incident</h4>
+          <form id="incForm" onsubmit="submitIncident(event)">
+            <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Location" required></div>
+             <div class="two-cols" style="margin-top:10px"><input id="rDate" type="datetime-local" required><select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select></div>
+            <textarea id="rDesc" placeholder="Description..." style="margin-top:10px" required></textarea>
+            <button type="submit" class="primary" style="margin-top:10px">Submit Incident</button>
+          </form>
+        </div>
+
+        <div style="overflow-x:auto; margin-top:10px">
+          <table id="dashTable"><thead><tr><th>Date</th><th>Reporter</th><th>Severity</th><th>Description</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+        <button class="primary" onclick="exportJSON()" style="margin-top:15px">Export Data</button>
+      </div>
+    </section>
+    
+    <section id="ppe" style="display:none" class="container">
+      <div class="card">
+        <h2>PPE Inventory</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+              <h4>Add / Restock Item</h4>
+              <p class="small" style="text-transform:none;font-weight:500;margin:-4px 0 8px;">If the item name already exists, the quantity below is <b>added to its current stock</b> instead of creating a duplicate row.</p>
+            <form onsubmit="addPPEItem(event)">
+                <div class="two-cols"><input id="ppeName" placeholder="Item Name" required><input id="ppeUnit" placeholder="Unit (e.g. Pairs)" required></div>
+                <div class="two-cols" style="margin-top:5px"><input id="ppeInitialQty" type="number" min="1" placeholder="Quantity to Add" required><input id="ppeReorder" type="number" min="0" placeholder="Reorder Alert Level" required></div>
+                <button type="submit" class="primary" style="margin-top:5px">Save Item</button>
+            </form>
+        </div>
+        <h3>Current Stock</h3>
+        <div style="overflow-x:auto; margin-bottom: 20px;">
+            <table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        </div>
+        
+        <h3 style="border-top:1px solid #eee; padding-top:15px;">PPE Issue Log</h3>
+        <div style="overflow-x:auto; max-height:250px;">
+             <table id="ppeLogTable"><thead><tr><th>Date</th><th>Employee</th><th>Emp ID</th><th>Item</th><th>Qty</th><th>Location</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="training" style="display:none" class="container">
+      <div class="card">
+        <h2>Safety Training</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+            <h4>Define Module</h4>
+            <form onsubmit="addModule(event)">
+                 <div class="two-cols"><input id="modName" placeholder="Module Name" required><input id="modFreq" type="number" placeholder="Frequency (Months)" required></div>
+                <button type="submit" class="primary" style="margin-top:5px">Save Module</button>
+            </form>
+        </div>
+        <h3>Modules</h3>
+        <table id="modTable" style="margin-bottom:20px"><thead><tr><th>Module</th><th>Frequency</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        
+        <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+             <h4>Record Completion</h4>
+            <form onsubmit="addRecord(event)">
+                <div class="two-cols"><input id="recName" placeholder="Employee Name" required><select id="recMod" required><option value="">Select Module</option></select></div>
+                <div class="two-cols" style="margin-top:5px"><input id="recDate" type="date" required><button type="submit" class="primary">Record</button></div>
+            </form>
+        </div>
+        <h3>Records</h3>
+         <table id="recTable"><thead><tr><th>Employee</th><th>Module</th><th>Date</th><th>Next Due</th><th>Actions</th></tr></thead><tbody></tbody></table>
+
+        <div class="visitor-card" style="margin-top:30px; border-top: 2px solid #eee; padding-top:20px;">
+          <h3>Visitor Safety Induction</h3>
+          <p style="margin:6px 0 12px;color:var(--muted)">Record visitor induction, issue PPE and generate visitor induction certificate.</p>
+          <div style="display:grid; gap:8px; margin-bottom:12px;">
+            <form id="visitorForm" onsubmit="addVisitor(event)">
+              <div class="two-cols">
+                <input id="visName" placeholder="Visitor Name" required>
+                <input id="visCompany" placeholder="Company Name" required>
+              </div>
+              <div class="two-cols" style="margin-top:6px">
+                <input id="visPersonMeet" placeholder="Person to Meet" required>
+                <input id="visMobile" placeholder="Visitor Mobile Number" required>
+              </div>
+              <div class="two-cols" style="margin-top:6px">
+                <select id="visFactory" required></select>
+                 <input id="visPurpose" placeholder="Purpose of Visit" required>
+              </div>
+              <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label><input type="checkbox" id="visBrief"> Safety Briefing Given</label>
+              </div>
+              <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label style="font-weight:700; margin-right:8px">PPE Issued:</label>
+                <label><input type="checkbox" name="ppe" value="Helmet"> Helmet</label>
+                <label><input type="checkbox" name="ppe" value="Safety Shoe"> Safety Shoe</label>
+                <label><input type="checkbox" name="ppe" value="Vest"> Vest</label>
+                <label><input type="checkbox" name="ppe" value="Goggles"> Goggles</label>
+                <label><input type="checkbox" id="visPPEOtherChk" name="ppe" value="Other"> Other</label>
+                <input id="visPPEOtherText" placeholder="Other PPE (if any)" style="width:200px;">
+              </div>
+              <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="ghost-dark" onclick="document.getElementById('visitorForm').reset()">Reset</button>
+                <button type="submit" class="primary">Save & Generate Certificate</button>
+              </div>
+            </form>
+          </div>
+          <h4 style="margin-top:6px">Visitor Log</h4>
+          <div style="overflow-x:auto; max-height:240px;">
+            <table id="visitorTable">
+              <thead><tr><th>Name</th><th>Company</th><th>Mobile</th><th>Issued Time</th><th>Brief</th><th>PPE</th><th>Factory</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ptw" style="display:none" class="container">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>Permit To Work (PTW)</h2>
+          <div>
+            <button class="primary" onclick="openPTWModal()">Create PTW</button>
+            <button class="ghost-dark" onclick="renderPTWList()">Refresh</button>
+            <button class="ghost-dark" onclick="renderPTWList('all')">All</button>
+            <button class="ghost-dark" onclick="renderPTWList('pending')">Pending</button>
+            <button class="ghost-dark" onclick="renderPTWList('approved')">Approved</button>
+            <button class="ghost-dark" onclick="renderPTWList('rejected')">Rejected</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="ptw-filter">
+            <label><strong>Filter by Factory:</strong></label>
+            <select id="ptwFactoryFilter" onchange="renderPTWList()"><option value="">All Factories</option></select>
+            <label><strong>Keyword:</strong></label>
+             <input id="ptwSearch" placeholder="Search by requester/location/desc" oninput="renderPTWList()" style="width:220px">
+          </div>
+          <div style="overflow-x:auto;">
+            <table id="ptwTable">
+              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+             </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="legal" style="display:none" class="container">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>Legal Register</h2>
+            <button class="ghost-dark" onclick="printLegalRegister()">🖨️ Print / Download</button>
+        </div>
+        
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent-3);">
+            <h4>Add Statutory Requirement</h4>
+            <form onsubmit="addLegalItem(event)">
+                <div class="two-cols"><input id="legAct" placeholder="Act / Rule Name" required><input id="legLicense" placeholder="License / Permit Name" required></div>
+                <div class="two-cols" style="margin-top:5px"><input id="legAuthority" placeholder="Regulatory Authority" required><select id="legFactorySelect" required></select></div>
+                <div class="two-cols" style="margin-top:5px">
+                    <div><label class="small">Issue Date</label><input id="legIssue" type="date" required></div>
+                    <div><label class="small">Expiry Date</label><input id="legExpiry" type="date" required></div>
+                </div>
+                <button type="submit" class="primary" style="margin-top:10px">Add to Register</button>
+            </form>
+        </div>
+        <table id="legalTable"><thead><tr><th>Act/Rule</th><th>License</th><th>Factory</th><th>Issue date</th><th>Expiry</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section id="policies" style="display:none" class="container">
+      <div class="card">
+        <h2>Policies & SOPs</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
+          <h4>Upload Policy PDF</h4>
+          <form onsubmit="uploadPolicy(event)">
+            <div class="two-cols">
+              <input id="polTitle" placeholder="Policy Title" required>
+              <input id="polFile" type="file" accept="application/pdf,image/*" required>
+            </div>
+            <button type="submit" class="primary" style="margin-top:8px">Upload</button>
+          </form>
+        </div>
+        <div id="policyGallery" class="pdf-grid"></div>
+      </div>
+    </section>
+
+    <section id="gallery" style="display:none" class="container">
+      <div class="card">
+        <h2>Gallery</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
+          <h4>Upload Photo</h4>
+          <input id="galUpload" type="file" accept="image/*">
+          <button class="primary btn-sm" onclick="uploadPhoto()" style="margin-left:8px">Upload</button>
+        </div>
+        <div id="galleryGrid" class="gallery"></div>
+      </div>
+    </section>
+
+    <section id="contact" style="display:none" class="container">
+      <div class="card">
+        <h1>Emergency Contacts:</h1>
+        <table style="width:100%">
+          <tr><th>Name</th><th>Number</th></tr>
+          <tr><td>West Bengal Police</td><td><a href="tel:100">📞 100</a></td></tr>
+          <tr><td>Fire Brigade</td><td><a href="tel:101">📞 101</a></td></tr>
+          <tr><td>Ambulance</td><td><a href="tel:102">📞 102</a></td></tr>
+          <tr><td>Medical Helpline</td><td><a href="tel:+919830079999">📞 +91 9830079999</a></td></tr>
+          <tr><td>Child Helpline</td><td><a href="tel:1098">📞 1098</a></td></tr>
+          <tr><td>Women Helpline</td><td><a href="tel:1091">📞 1091</a></td></tr>
+          <tr><td>Tarsons HSE Manager</td><td><a href="tel:+917980326735">📞 +91 7980326735</a></td></tr>
+          <tr><td>TARSONS PRODUCTS LIMITED (H.O)</td><td><a href="tel:+9103335220300">📞 +91 033 3522 0300</a></td></tr>
+        </table>
+        <h1>Factory ERT Members:</h1>
+        <table style="width:100%">
+          <tr><th>Name</th><th>Factory</th><th>Number</th></tr>
+          <tr><td>Nasiruddin Sk</td><td>JANGALPUR</td><td><a href="tel:+919804081106">☎ 9804081106</a></td></tr>
+          <tr><td>Basiruddin Mallik</td><td>DHULAGARH</td><td><a href="tel:+919831604820">☎ 9831604820</a></td></tr>
+          <tr><td>Ali Hapej</td><td>PANCHLA</td><td><a href="tel:+919876543210">☎ 9876543210</a></td></tr>
+          <tr><td>SK Rafikul</td><td>AMTA</td><td><a href="tel:+919876543211">☎ 9876543211</a></td></tr>
+        </table>
+      </div>
+    </section>
+  </main>
+  
+  <div id="notificationModal">
+      <div id="notificationBox">
+          <div style="display:flex;justify-content:space-between"><h3>Notifications</h3><button class="ghost-dark" onclick="document.getElementById('notificationModal').style.display='none'">X</button></div>
+          <div id="notifContent"></div>
+          <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; text-align:right;">
+             <button class="btn-danger btn-sm" onclick="clearBellNotifications()">Clear All</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="ppeIssueModal">
+      <div id="ppeIssueBox">
+          <h3>Issue PPE</h3>
+          <p class="small" id="ppeItemDisplay">Item: </p>
+          <form onsubmit="confirmIssuePPE(event)">
+              <div class="two-cols">
+                  <input id="issueEmpName" placeholder="Employee Name" required>
+                  <input id="issueEmpID" placeholder="Employee ID" required>
+              </div>
+              <div class="two-cols" style="margin-top:10px;">
+                  <input id="issueDate" type="date" required>
+                  <select id="issueLocation" required>
+                      <option value="">Select Location</option>
+                      <option>Jangalpur</option>
+                      <option>Dhulagarh</option>
+                      <option>Amta</option>
+                      <option>Panchla</option>
+                  </select>
+              </div>
+              <input id="issueQty" type="number" placeholder="Quantity to Issue" style="margin-top:10px;" required>
+              <div style="text-align:right; margin-top:15px;">
+                  <button type="button" class="ghost-dark" onclick="document.getElementById('ppeIssueModal').style.display='none'">Cancel</button>
+                  <button type="submit" class="primary">Confirm Issue</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <div id="siteStatsModal">
+    <div id="siteStatsBox">
+        <h3>Update Factory Stats</h3>
+        <label>Select Factory</label>
+        <select id="factorySelect" style="width:100%; margin-bottom:10px;" onchange="loadFactoryData()"></select>
+        <div style="display:grid; gap:10px;">
+            <label>Fire Extinguishers Qty</label><input id="editFire" type="number">
+            <label>First Aid Box Qty</label><input id="editFirstAid" type="number">
+            <label>Total Manpower</label><input id="editManpower" type="number">
+        </div>
+        <div style="text-align:right; margin-top:15px;">
+            <button class="ghost-dark" onclick="document.getElementById('siteStatsModal').style.display='none'">Cancel</button>
+            <button class="primary" onclick="saveSiteStats()">Save</button>
+        </div>
+    </div>
+  </div>
+  
+  <div id="noticeBoardModal">
+    <div id="noticeBox">
+        <div style="display:flex;justify-content:space-between"><h3>Manage Notices</h3><button class="ghost-dark" onclick="document.getElementById('noticeBoardModal').style.display='none'">X</button></div>
+        <div style="margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;">
+            <h5>Create New Notice</h5>
+            <form onsubmit="addNotice(event)">
+                <input id="noticeTitle" placeholder="Title" required style="margin-bottom:5px;">
+                <textarea id="noticeContent" placeholder="Content" required style="margin-bottom:5px;"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-size:14px;"><input type="checkbox" id="noticeActive" checked> Make Active Now</label>
+                    <button type="submit" class="primary btn-sm">Add Notice</button>
+                </div>
+            </form>
+        </div>
+        <h5>Current Notices</h5>
+        <div style="max-height:250px;overflow:auto;"><table id="adminNoticeTable" class="notice-board-admin"><thead><tr><th>Title</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="fullscreenModal" onclick="if(event.target.id==='fullscreenModal') this.style.display='none'">
+    <div id="fsBox" style="width:92%;max-width:900px;background:white;padding:10px;border-radius:12px;position:relative;">
+      <span id="fsCounter" style="position:absolute;left:16px;top:14px;font-size:12px;font-weight:700;color:var(--muted);background:rgba(0,0,0,.06);padding:3px 10px;border-radius:20px;"></span>
+      <button class="ghost-dark btn-sm" style="position:absolute;right:10px;top:10px" onclick="document.getElementById('fullscreenModal').style.display='none'">Close</button>
+      <button id="fsPrev" class="ghost-dark btn-sm" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);" onclick="moveGallery(-1)">◀</button>
+      <button id="fsNext" class="ghost-dark btn-sm" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);" onclick="moveGallery(1)">▶</button>
+     <img id="fsImg" src="" alt="Fullscreen image" style="width:100%;height:auto;max-height:80vh;object-fit:contain;border-radius:8px">
+    </div>
+  </div>
+
+  <div id="ptwModal">
+    <div id="ptwBox">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>Create PTW</h3>
+        <button class="ghost-dark btn-sm" onclick="document.getElementById('ptwModal').style.display='none'">Close</button>
+      </div>
+      <form onsubmit="createPTW(event)">
+        <div class="two-cols">
+          <input id="ptwDate" type="date" required>
+          <select id="ptwType" required>
+            <option value="">Select Type</option>
+            <option>Hot Work</option>
+            <option>Confined Space</option>
+            <option>Working at Height</option>
+            <option>Electrical</option>
+            <option>Excavation</option>
+          </select>
+        </div>
+        <div class="two-cols" style="margin-top:8px">
+          <select id="ptwFactory" required></select>
+          <input id="ptwLocation" placeholder="Location" required>
+        </div>
+        <div class="two-cols" style="margin-top:8px">
+          <input id="ptwRequester" placeholder="Requester" required>
+          <select id="ptwStatus" required>
+            <option>Pending</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+          </select>
+        </div>
+        <div style="text-align:right;margin-top:10px">
+          <button type="submit" class="primary">Save PTW</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="aiAssistantBtn" onclick="toggleAI()">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+    <path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2 22l5-1.338c1.47.851 3.179 1.338 5 1.338 5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+  </svg>
+</div>
+
+<div id="aiAssistantBox">
+  <div id="aiHeader">
+    <span>TPL Safety Bot</span>
+    <span style="cursor:pointer" onclick="toggleAI()">×</span>
+  </div>
+  <div id="aiMessages">
+    <div class="ai-msg ai-bot">Welcome to the Tarsons HSE Portal. I can help with PPE info, emergency contacts, or reporting procedures.</div>
+    <div id="aiTyping" class="typing">Bot is typing...</div>
+  </div>
+  <div id="aiInputArea">
+    <input type="text" id="aiInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendAIMessage()">
+    <button onclick="sendAIMessage()">➤</button>
+  </div>
+</div>
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyClblb2ImdWv8bUvp-MIs8lifMEWYaWtHg",
+      authDomain: "tpl-safety-db.firebaseapp.com",
+      projectId: "tpl-safety-db",
+      storageBucket: "tpl-safety-db.firebasestorage.app",
+      messagingSenderId: "393070007406",
+      appId: "1:393070007406:web:6dfbb871edd21cb74c027f",
+      measurementId: "G-5FX2RVS3BH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // --- CLOUD SYNC (Google Sheets via Apps Script) ---
+    // 1. Deploy the companion Code.gs as a Web App (Execute as: Me, Access: Anyone).
+    // 2. Paste the /exec URL you get below. Everyone who opens this page shares the same sheet.
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx-c1SNBS2QlkJFR09K6OJIPW_utjCXhSSSUerNjZ4OPNyetUoLlT6_rQwCwwrFDwDu/exec";
+    const CLOUD_SYNC_ENABLED = !GAS_URL.startsWith("PASTE_YOUR");
+    const CLOUD_POLL_MS = 15000; // how often to pull other users' changes
+    let cloudSyncTimer = null;
+    let cloudLastSyncOk = false;
+
+    function setCloudStatus(ok, msg) {
+      cloudLastSyncOk = ok;
+      const el = document.getElementById('cloudSyncBadge');
+      if (!el) return;
+      el.style.display = 'inline-flex';
+      el.title = msg || (ok ? 'Synced with shared spreadsheet' : 'Cloud sync unavailable — showing local data only');
+      el.style.background = ok ? 'rgba(18,183,106,.18)' : 'rgba(229,72,77,.18)';
+      el.style.color = ok ? 'var(--accent)' : 'var(--danger)';
+      el.innerText = ok ? '● Synced' : '● Offline';
+    }
+
+    // Push one key/value pair to the shared spreadsheet. We track it as
+    // "pending" until the request finishes so a poll landing at the same
+    // moment can't pull the old value back down and erase what was just
+    // added (this was the cause of new users/records "disappearing").
+    const pendingWrites = new Set();
+    async function syncToCloud(key, value, attempt) {
+      if (!CLOUD_SYNC_ENABLED) return;
+      attempt = attempt || 1;
+      pendingWrites.add(key);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // keeps this a "simple" request, avoids a CORS preflight
+          body: JSON.stringify({ action: 'update', key, value })
+        });
+        const json = await res.json().catch(() => null);
+        if (!json || json.status !== 'ok') throw new Error((json && json.message) || 'bad response');
+        setCloudStatus(true);
+      } catch (err) {
+        console.error('Cloud sync (push) failed for', key, err);
+        if (attempt < 3) {
+          setTimeout(() => { pendingWrites.delete(key); syncToCloud(key, value, attempt + 1); }, 2000 * attempt);
+          return; // keep it marked pending until the retry finishes
+        }
+        setCloudStatus(false, 'Could not save "' + key + '" to the shared spreadsheet — check the Apps Script deployment');
+      } finally {
+        if (attempt >= 3 || pendingWrites.has(key)) pendingWrites.delete(key);
+      }
+    }
+
+    // Pull the entire shared dataset from the spreadsheet into localStorage.
+    async function loadFromCloud() {
+      if (!CLOUD_SYNC_ENABLED) { setCloudStatus(false, 'GAS_URL not configured — edit the script and add your Apps Script URL'); return false; }
+      try {
+        const res = await fetch(GAS_URL + '?action=getAll&t=' + Date.now());
+        const json = await res.json();
+        if (json && json.status === 'ok' && json.data) {
+          Object.keys(json.data).forEach(k => {
+            if (pendingWrites.has(k)) return; // a write for this key is still in flight — don't clobber it
+            localStorage.setItem('hse_' + k, JSON.stringify(json.data[k]));
+          });
+          setCloudStatus(true);
+          return true;
+        }
+        setCloudStatus(false, 'Unexpected response from Apps Script');
+        return false;
+      } catch (err) {
+        console.error('Cloud sync (pull) failed', err);
+        setCloudStatus(false, 'Could not reach the shared spreadsheet');
+        return false;
+      }
+    }
+
+    // Re-render whatever section is currently open with fresh data, without
+    // disturbing the user's login state or scroll position.
+    let lastNavId = 'home';
+    function refreshCurrentView() {
+      const visible = Array.from(document.querySelectorAll('main section'))
+        .find(s => s.style.display !== 'none');
+      navTo(visible ? visible.id : lastNavId);
+    }
+
+    function startCloudPolling() {
+      if (!CLOUD_SYNC_ENABLED || cloudSyncTimer) return;
+      cloudSyncTimer = setInterval(async () => {
+        const ok = await loadFromCloud();
+        if (ok) refreshCurrentView();
+      }, CLOUD_POLL_MS);
+    }
+
+    // --- LOCAL DB HELPER ---
+    // Reads/writes are synchronous against localStorage (so the rest of the app
+    // doesn't need to change), and every write is also pushed to the shared
+    // Google Sheet in the background. On load and on a timer we pull the sheet
+    // back down so changes made on other devices/networks show up here too.
+    const LocalDB = {
+      get(k, def=[]) { try { return JSON.parse(localStorage.getItem('hse_' + k)) || def; } catch(e) { return def; } },
+      set(k, v) { 
+          try { 
+              localStorage.setItem('hse_' + k, JSON.stringify(v));
+          } catch(e) { 
+              if (e.name === 'QuotaExceededError') {
+                  alert('Storage Limit Exceeded! Cannot save large files/data. Please clear some data.');
+              }
+          } 
+          syncToCloud(k, v);
+      }
+    };
+
+    // --- STANDARD APP LOGIC ---
+
+    let currentUser = JSON.parse(sessionStorage.getItem('hse_user')) || null;
+    let myChart = null;
+    let currentPhotoIndex = -1;
+    let selectedPPEItemForIssue = null;
+    
+    // --- FORCE ALL FACTORIES TO SHOW ---
+    const DEFAULT_FACTORIES = {
+      "Jangalpur":{manpower:100,fire:50,firstAid:10},
+      "Dhulagarh":{manpower:80,fire:30,firstAid:8}, 
+      "Amta":{manpower:120,fire:45,firstAid:12}, 
+      "Panchla":{manpower:90,fire:40,firstAid:10}
+    };
+    
+    // Merge defaults with existing so we don't lose updates but ensure all keys exist
+    let currentFactories = LocalDB.get('factories', {});
+    let needsUpdate = false;
+    for (const [key, value] of Object.entries(DEFAULT_FACTORIES)) {
+      if (!currentFactories[key]) {
+        currentFactories[key] = value;
+        needsUpdate = true;
+      }
+    }
+    if(needsUpdate) LocalDB.set('factories', currentFactories);
+
+
+    function checkAuth() {
+        const badge = document.getElementById('userBadge');
+        const isAdmin = !!(currentUser && currentUser.role === 'admin');
+        // Toggle a body class instead of forcing inline display:block on every
+        // .admin-only element — the old approach broke table cells/rows/list
+        // items by forcing block display on <td>/<li> elements. CSS now
+        // handles per-tag-type visibility via body.is-admin .admin-only.
+        document.body.classList.toggle('is-admin', isAdmin);
+        if (currentUser) {
+            badge.innerText = `${currentUser.role.toUpperCase()}: ${currentUser.username}`;
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+        } else {
+            badge.innerText = '';
+            document.getElementById('loginBtn').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+        }
+        updateBell();
+    }
+
+    function showLogin() { document.getElementById('loginOverlay').style.display = 'flex'; }
+    function doLogout() { sessionStorage.removeItem('hse_user'); location.reload(); }
+    
+    function doLogin() {
+        const u = document.getElementById('loginUser').value.trim();
+        const p = document.getElementById('loginPass').value.trim();
+        
+        if (u === 'admin' && p === 'admin123') {
+            currentUser = { username: 'admin', role: 'admin' };
+            sessionStorage.setItem('hse_user', JSON.stringify(currentUser));
+            location.reload();
+            return;
+        }
+        const users = LocalDB.get('users', []);
+        const found = users.find(user => (user.user === u || user.empId === u) && (user.password === p));
+        if (found) {
+             currentUser = { username: found.user, role: found.role };
+             sessionStorage.setItem('hse_user', JSON.stringify(currentUser));
+             location.reload();
+        } else {
+            alert('Invalid credentials');
+        }
+    }
+
+    function navTo(id) {
+        document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+        const target = document.getElementById(id);
+        if(!target) return;
+        lastNavId = id;
+        target.style.display = 'block';
+        
+        if (id === 'home') { renderNotices(); renderFactories(); renderChart(); refreshStats(); renderExpiryAlerts(); }
+        if (id === 'adminSection') { populateFactorySelects(); renderAdminSection(); renderAudits(); }
+        if (id === 'dashboard') renderDashboard();
+        if (id === 'ppe') { renderPPE(); renderPPELogs(); }
+        if (id === 'legal') renderLegalRegister();
+        if (id === 'training') { populateFactorySelects(); renderModules(); renderRecords(); renderVisitors(); }
+        if (id === 'ptw') { populateFactorySelects(); renderPTWList(); }
+        if (id === 'gallery') renderGallery();
+        if (id === 'policies') renderPolicies();
+        if (id === 'hira') { populateFactorySelects(); renderHIRA(); }
+        if (id === 'waste') { populateFactorySelects(); renderWaste(); }
+        updateBell();
+    }
+
+    function requireAuthAndGo(id) { if (!currentUser) showLogin(); else navTo(id); }
+
+    function updateBell() {
+        const legal = LocalDB.get('legal', []);
+        const ptw = LocalDB.get('ptw', []);
+        const extinguishers = LocalDB.get('extinguishers', []);
+        const today = new Date();
+        
+        let count = 0;
+        legal.forEach(x => {
+            const diff = (new Date(x.expiry) - today) / (1000*60*60*24);
+            if (diff <= 30) count++;
+        });
+        ptw.forEach(p => {
+            if(p.status === 'Pending') count++;
+        });
+        extinguishers.forEach(x => {
+            if (!x.due) return;
+            const diff = (new Date(x.due) - today) / (1000*60*60*24);
+            if (diff <= 30) count++;
+        });
+        const badge = document.getElementById('bellBadge');
+        if(count > 0){
+            badge.style.display = 'flex';
+            badge.innerText = count > 99 ? '99+' : count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function openNotifications(){
+        const legal = LocalDB.get('legal', []);
+        const ptw = LocalDB.get('ptw', []);
+        const extinguishers = LocalDB.get('extinguishers', []);
+        const today = new Date();
+        let html = '';
+        const expiring = legal.filter(x => (new Date(x.expiry) - today) / (1000*60*60*24) <= 30);
+        if(expiring.length > 0){
+            html += '<h4>⚠️ Expiring Compliance</h4><ul style="padding-left:20px;margin-bottom:10px">';
+            expiring.forEach(x => {
+                html += `<li><b>${escapeHtml(x.license)}</b> (${x.factory}) expires on ${x.expiry}</li>`;
+            });
+            html += '</ul>';
+        }
+        const extDue = extinguishers.filter(x => x.due && (new Date(x.due) - today) / (1000*60*60*24) <= 30)
+            .sort((a,b) => new Date(a.due) - new Date(b.due));
+        if(extDue.length > 0){
+            html += '<h4>🧯 Fire Extinguisher Refills Due</h4><ul style="padding-left:20px;margin-bottom:10px">';
+            extDue.forEach(x => {
+                const st = extinguisherStatus(x.due);
+                html += `<li><b>${escapeHtml(x.extID)}</b> (${escapeHtml(x.factory)}) — <span class="status-pill ${st.cls}">${st.label}</span></li>`;
+            });
+            html += '</ul>';
+        }
+        const pending = ptw.filter(p => p.status === 'Pending');
+        if(pending.length > 0){
+            html += '<h4>📝 Pending PTW Approvals</h4><ul style="padding-left:20px">';
+            pending.forEach(p => {
+                html += `<li><b>${escapeHtml(p.id)}</b>: ${escapeHtml(p.type)} at ${p.factory}</li>`;
+            });
+            html += '</ul>';
+        }
+        if(html === '') html = '<p>No pending alerts.</p>';
+        document.getElementById('notifContent').innerHTML = html;
+        document.getElementById('notificationModal').style.display = 'flex';
+    }
+
+    function clearBellNotifications(){
+        document.getElementById('bellBadge').style.display = 'none';
+        document.getElementById('notifContent').innerHTML = '<p>Notifications cleared for this session.</p>';
+    }
+
+    // Notices
+    function renderNotices() {
+        const list = LocalDB.get('notices', [{id:1, title:'Welcome', content:'Safe work today!', active:true}]);
+        document.getElementById('activeNoticesList').innerHTML =
+          list.filter(n => n.active).map(n => `<div class="notice-item"><strong>${escapeHtml(n.title)}</strong>: ${escapeHtml(n.content)}</div>`).join('') ||
+          '<div class="small">No active notices.</div>';
+        renderAdminNotices();
+    }
+    
+    async function addNotice(e){
+      e.preventDefault();
+      const title = document.getElementById('noticeTitle').value;
+      const content = document.getElementById('noticeContent').value;
+      const active = document.getElementById('noticeActive').checked;
+      const noticeObj = { id: Date.now(), title, content, active }; 
+      
+      const list = LocalDB.get('notices');
+      list.unshift(noticeObj);
+      LocalDB.set('notices', list);
+      
+      e.target.reset();
+      renderNotices();
+    }
+
+    function renderAdminNotices(){
+      const list = LocalDB.get('notices', []);
+      const tbody = document.querySelector('#adminNoticeTable tbody');
+      if(!tbody) return;
+      tbody.innerHTML = list.map(n => `
+        <tr><td>${escapeHtml(n.title)}</td><td>${n.active ? 'Yes' : 'No'}</td>
+          <td><button class="btn-action btn-sm" onclick="toggleNoticeActive(${n.id})">${n.active?'Deactivate':'Activate'}</button>
+          <button class="btn-danger btn-sm" onclick="deleteNotice(${n.id})">Delete</button></td></tr>
+      `).join('');
+    }
+    function toggleNoticeActive(id){
+      const list = LocalDB.get('notices');
+      const idx = list.findIndex(n => n.id === id);
+      if(idx>-1){ list[idx].active = !list[idx].active; LocalDB.set('notices', list); renderNotices(); }
+    }
+    function deleteNotice(id){
+      LocalDB.set('notices', LocalDB.get('notices').filter(n => n.id !== id));
+      renderNotices();
+    }
+
+    // Factories & Stats
+    function renderFactories() {
+        const data = LocalDB.get('factories');
+        const container = document.getElementById('factoriesContainer');
+        // Ensure all factories are shown, even if they have 0 data
+        const factoryNames = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
+        
+        container.innerHTML = factoryNames.map(name => {
+            const facData = data[name] || { manpower: 0, fire: 0, firstAid: 0 };
+            return `
+            <div class="factory-card">
+                <div class="factory-title">${name}</div>
+                <div class="stat-row"><span>Manpower</span><strong>${facData.manpower}</strong></div>
+                <div class="stat-row"><span>FirstAid</span><strong>${facData.firstAid}</strong></div>
+                <div class="stat-row"><span>Extinguishers</span><strong>${facData.fire}</strong></div>
+             </div>`;
+        }).join('');
+        populateFactorySelects();
+    }
+
+    function refreshStats() {
+        const reports = LocalDB.get('reports', []);
+        const ptws = LocalDB.get('ptw', []);
+        document.getElementById('totalReports').innerText = reports.length;
+        document.getElementById('openPTWs').innerText = ptws.filter(p => p.status === 'Pending').length;
+
+        // Safe Days = days since the most recent incident
+        let trackingStart = LocalDB.get('trackingStart', null);
+        if (!trackingStart) { trackingStart = new Date().toISOString(); LocalDB.set('trackingStart', trackingStart); }
+        let lastIncidentDate = null;
+        reports.forEach(r => {
+            const d = new Date(r.date);
+            if (!isNaN(d) && (!lastIncidentDate || d > lastIncidentDate)) lastIncidentDate = d;
+        });
+        const baseline = lastIncidentDate || new Date(trackingStart);
+        const safeDays = Math.max(0, Math.floor((new Date() - baseline) / (1000*60*60*24)));
+        document.getElementById('safeDays').innerText = safeDays;
+
+        // Accident Ratio = share of logged incidents rated High or Fatal severity
+        const severe = reports.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
+        const ratio = reports.length > 0 ? ((severe / reports.length) * 100).toFixed(1) : '0';
+        document.getElementById('accRatio').innerText = ratio + '%';
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('incidentChart');
+        if (!ctx) return;
+        if (myChart) myChart.destroy();
+
+        // Build the last 6 months' real incident counts
+        const reports = LocalDB.get('reports', []);
+        const now = new Date();
+        const labels = [];
+        const counts = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(d.toLocaleString('default', { month: 'short' }));
+            const count = reports.filter(r => {
+                const rd = new Date(r.date);
+                return !isNaN(rd) && rd.getFullYear() === d.getFullYear() && rd.getMonth() === d.getMonth();
+            }).length;
+            counts.push(count);
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{ label: 'Incidents', data: counts, borderColor: '#12b76a', backgroundColor: 'rgba(18,183,106,0.15)', fill: true, tension: 0.3 }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+    }
+
+    function populateFactorySelects() {
+        const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
+        const selectIds = [
+            'factorySelect', 'extFactory', 'extFilter', 'auditFactory', 
+            'visFactory', 'ptwFactory', 'ptwFactoryFilter', 'legFactorySelect', 'issueLocation',
+            'hiraFactory', 'wasteFactory'
+        ];
+
+        selectIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const firstOption = (el.options[0] && (el.options[0].value === "" || el.options[0].text.includes("All"))) 
+                ? el.options[0].outerHTML : "";
+            el.innerHTML = firstOption + factories.map(f => `<option value="${f}">${f}</option>`).join('');
+        });
+    }
+
+    function openSiteStats() {
+        populateFactorySelects();
+        loadFactoryData();
+        document.getElementById('siteStatsModal').style.display = 'flex';
+    }
+    function loadFactoryData(){
+      const f = document.getElementById('factorySelect').value || Object.keys(LocalDB.get('factories'))[0] || '';
+      const data = LocalDB.get('factories');
+      const facData = data[f] || { manpower: 0, fire: 0, firstAid: 0 };
+      
+      document.getElementById('factorySelect').value = f;
+      document.getElementById('editManpower').value = facData.manpower;
+      document.getElementById('editFire').value = facData.fire;
+      document.getElementById('editFirstAid').value = facData.firstAid;
+    }
+    function saveSiteStats() {
+        const f = document.getElementById('factorySelect').value;
+        const mp = parseInt(document.getElementById('editManpower').value) || 0;
+        const fr = parseInt(document.getElementById('editFire').value) || 0;
+        const fa = parseInt(document.getElementById('editFirstAid').value) || 0;
+        if(!f) return;
+        let data = LocalDB.get('factories');
+        data[f] = { ...(data[f]||{}), manpower: mp, fire: fr, firstAid: fa };
+        LocalDB.set('factories', data);
+        renderFactories();
+        document.getElementById('siteStatsModal').style.display = 'none';
+    }
+
+    function renderUsers(){
+      const listEl = document.getElementById('usersList');
+      if (!listEl) return;
+      let list = LocalDB.get('users', []);
+      if (!Array.isArray(list) || list.length === 0) {
+        list = [{ id: 1, user: 'admin', role: 'admin', empId: '001' }];
+        LocalDB.set('users', list);
+      }
+      listEl.innerHTML = list.map(u => `
+            <li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee">
+                <div style="display:flex; flex-direction:column;">
+                    <span><b>${escapeHtml(u.user)}</b> (${escapeHtml(u.role)})</span>
+                    <span style="font-size:11px; color:#666;">ID: ${escapeHtml(u.empId || '-')}</span>
+                </div>
+                ${u.user === 'admin' ? '<span class="small">(Default)</span>' : `<button class="btn-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button>`}
+            </li>
+        `).join('');
+    }
+    function addUser(e){
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value.trim();
+      const role = document.getElementById('newRole').value;
+      const empId = document.getElementById('newEmpId').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      if(!username || !role || !empId || !password) { alert('All fields are required'); return; }
+      const users = LocalDB.get('users', []);
+      if (!Array.isArray(users) || users.length === 0) users.push({ id: 1, user: 'admin', role: 'admin', empId: '001' });
+      if(users.some(u => u.empId === empId || u.user.toLowerCase() === username.toLowerCase())){
+        alert('A user with that name or Employee ID already exists');
+        return;
+      }
+      users.push({ id: Date.now() + Math.floor(Math.random()*1000), user: username, role, empId, password });
+      LocalDB.set('users', users);
+      e.target.reset();
+      renderUsers();
+    }
+    function deleteUser(id){
+      if(!confirm('Delete this user?')) return;
+      const users = LocalDB.get('users', []).filter(u => u.id !== id);
+      LocalDB.set('users', users);
+      renderUsers();
+    }
+
+    function switchAdminTab(t) {
+        document.getElementById('tabExt').className = t === 'ext' ? 'admin-tab-btn active' : 'admin-tab-btn';
+        document.getElementById('tabAudit').className = t === 'audit' ? 'admin-tab-btn active' : 'admin-tab-btn';
+        document.getElementById('tabUsers').className = t === 'users' ? 'admin-tab-btn active' : 'admin-tab-btn';
+        document.getElementById('extContainer').style.display = t === 'ext' ? 'block' : 'none';
+        document.getElementById('auditContainer').style.display = t === 'audit' ? 'block' : 'none';
+        document.getElementById('usersContainer').style.display = t === 'users' ? 'block' : 'none';
+        if (t === 'users') renderUsers();
+    }
+    function renderAdminSection() { populateFactorySelects(); renderExtinguisherList(); }
+    
+    async function addExtinguisher(e) {
+        e.preventDefault();
+        const obj = {
+            id: Date.now(),
+            factory: document.getElementById('extFactory').value,
+            extID: document.getElementById('extID').value,
+            type: document.getElementById('extType').value,
+            cap: document.getElementById('extCap').value,
+            last: document.getElementById('extLast').value,
+            due: document.getElementById('extDue').value
+        };
+        const list = LocalDB.get('extinguishers');
+        list.push(obj);
+        LocalDB.set('extinguishers', list);
+        e.target.reset();
+        renderExtinguisherList();
+        updateBell(); renderExpiryAlerts();
+    }
+    function extinguisherStatus(due) {
+      if (!due) return { label: 'Unknown', cls: '' };
+      const days = Math.ceil((new Date(due) - new Date(new Date().toDateString())) / (1000 * 60 * 60 * 24));
+      if (days < 0) return { label: `Overdue by ${Math.abs(days)}d`, cls: 'status-overdue' };
+      if (days <= 30) return { label: `Due in ${days}d`, cls: 'status-due-soon' };
+      return { label: 'OK', cls: 'status-ok' };
+    }
+    function renderExtinguisherList() {
+        const filter = document.getElementById('extFilter').value;
+        let list = LocalDB.get('extinguishers', []);
+        if (filter) list = list.filter(x => x.factory === filter);
+        document.querySelector('#extTable tbody').innerHTML = list.map(x => {
+            const st = extinguisherStatus(x.due);
+            return `<tr class="${st.cls}"><td>${x.factory}</td><td>${x.extID}</td><td>${x.type}</td><td>${x.cap}</td><td>${x.due||'-'}</td>
+            <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+            <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteExtinguisher(${x.id})">Del</button></td></tr>`;
+        }).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No extinguishers registered yet.</td></tr>';
+    }
+    function deleteExtinguisher(id) {
+        if(!confirm('Delete this extinguisher record?')) return;
+        LocalDB.set('extinguishers', LocalDB.get('extinguishers').filter(x => x.id !== id));
+        renderExtinguisherList();
+        updateBell(); renderExpiryAlerts();
+    }
+    function printExtRegister(){
+      const table = document.getElementById('extTable').outerHTML;
+      const w = window.open('', '_blank');
+      w.document.write('<html><head><title>Extinguisher Register</title><style>table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;font-family:Inter,sans-serif;font-size:12px}</style></head><body><h3>Extinguisher Register</h3>'+table+'</body></html>');
+      w.document.close();
+      w.focus();
+      setTimeout(() => { w.print(); w.close(); }, 250);
+    }
+
+    function toggleAuditForm(force){
+      const box = document.getElementById('auditFormBox');
+      box.style.display = (force === false) ? 'none' : (box.style.display === 'none' || box.style.display === '' ? 'block' : 'none');
+    }
+    async function addAudit(e){
+      e.preventDefault();
+      const items = Array.from(document.querySelectorAll('#auditChecklist .audit-item'));
+      const yesCount = items.filter(i => i.checked).length;
+      const audit = {
+          id: Date.now(),
+          date: document.getElementById('auditDate').value,
+          factory: document.getElementById('auditFactory').value,
+          auditor: document.getElementById('auditAuditor').value,
+          score: Math.round((yesCount / 10) * 100)
+      };
+      document.getElementById('auditScore').value = audit.score;
+      const list = LocalDB.get('audits', []);
+      list.unshift(audit);
+      LocalDB.set('audits', list);
+      e.target.reset();
+      toggleAuditForm(false);
+      renderAudits();
+    }
+    function renderAudits(){
+      const list = LocalDB.get('audits', []);
+      document.querySelector('#auditTable tbody').innerHTML = list.map(a => `
+        <tr><td>${escapeHtml(a.date)}</td><td>${escapeHtml(a.factory)}</td><td>${escapeHtml(a.auditor)}</td><td>${escapeHtml(String(a.score))}</td>
+        <td><button class="btn-danger btn-sm" onclick="deleteAudit(${a.id})">Delete</button></td></tr>
+      `).join('');
+    }
+    function deleteAudit(id){ LocalDB.set('audits', LocalDB.get('audits', []).filter(a => a.id !== id)); renderAudits(); }
+
+    function renderDashboard() {
+        const list = LocalDB.get('reports', []);
+        document.querySelector('#dashTable tbody').innerHTML = list.map((r) => `
+            <tr><td>${r.date}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td>
+            <td><button class="btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button></td></tr>
+        `).join('');
+    }
+    function deleteReport(id){
+      LocalDB.set('reports', LocalDB.get('reports', []).filter(r => r.id !== id));
+      renderDashboard(); refreshStats();
+    }
+    async function submitIncident(e) {
+        e.preventDefault();
+        const report = {
+            id: Date.now(),
+            date: document.getElementById('rDate').value,
+            name: document.getElementById('rName').value,
+            sev: document.getElementById('rSev').value,
+            desc: document.getElementById('rDesc').value
+        };
+        const list = LocalDB.get('reports');
+        list.push(report);
+        LocalDB.set('reports', list);
+        alert('Incident Submitted');
+        e.target.reset();
+        renderDashboard();
+        refreshStats();
+    }
+
+    // --- PPE STOCK & ISSUE LOGIC ---
+    async function addPPEItem(e) {
+        e.preventDefault();
+        const name = document.getElementById('ppeName').value.trim();
+        const unit = document.getElementById('ppeUnit').value.trim();
+        const addQty = parseInt(document.getElementById('ppeInitialQty').value) || 0;
+        const reorder = parseInt(document.getElementById('ppeReorder').value) || 0;
+        if (!name || addQty <= 0) { alert('Enter a valid item name and quantity'); return; }
+
+        const list = LocalDB.get('ppe', []);
+        const existing = list.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+        if (existing) {
+            existing.qty = (existing.qty || 0) + addQty;
+            existing.reorder = reorder;
+            existing.unit = unit || existing.unit;
+        } else {
+            list.push({ id: Date.now(), name, unit, qty: addQty, reorder });
+        }
+        LocalDB.set('ppe', list);
+        e.target.reset();
+        renderPPE();
+    }
+
+    function renderPPE() {
+        const list = LocalDB.get('ppe', [{id:1, name:'Helmet', qty:10, unit:'Pcs', reorder:5}]);
+        document.querySelector('#ppeTable tbody').innerHTML = list.map(p => `
+            <tr>
+                <td>${escapeHtml(p.name)}</td>
+                <td>${p.qty}</td>
+                <td>${escapeHtml(p.unit)}</td>
+                <td><span class="status-badge ${p.qty <= p.reorder ? 'status-expired' : 'status-safe'}">${p.qty <= p.reorder ? 'Low' : 'OK'}</span></td>
+                <td>
+                    <button class="btn-action btn-sm" onclick="initiatePPEIssue(${p.id})">Issue</button>
+                    <button class="btn-action btn-sm admin-only" onclick="restockPPEItem(${p.id})">+ Stock</button>
+                    <button class="btn-danger btn-sm admin-only" onclick="deletePPEItem(${p.id})">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+        checkAuth();
+    }
+
+    function restockPPEItem(id) {
+        const list = LocalDB.get('ppe', []);
+        const item = list.find(p => p.id === id);
+        if (!item) return;
+        const input = prompt(`Add how many ${item.unit || 'units'} to "${item.name}"? (Current stock: ${item.qty})`);
+        if (input === null) return;
+        const addQty = parseInt(input);
+        if (isNaN(addQty) || addQty <= 0) { alert('Enter a valid positive quantity'); return; }
+        item.qty += addQty;
+        LocalDB.set('ppe', list);
+        renderPPE();
+    }
+
+    function deletePPEItem(id) {
+        if(!confirm('Delete this PPE Item category?')) return;
+        LocalDB.set('ppe', LocalDB.get('ppe').filter(p => p.id !== id));
+        renderPPE();
+    }
+    
+    function initiatePPEIssue(id){
+      const list = LocalDB.get('ppe', []);
+      const item = list.find(p => p.id === id);
+      if(!item) return;
+      selectedPPEItemForIssue = item;
+      document.getElementById('ppeItemDisplay').innerText = `Issuing Item: ${item.name} (Stock: ${item.qty})`;
+      document.getElementById('issueDate').valueAsDate = new Date();
+      document.getElementById('ppeIssueModal').style.display = 'flex';
+    }
+
+    async function confirmIssuePPE(e){
+        e.preventDefault();
+        if(!selectedPPEItemForIssue) return;
+        
+        const q = parseInt(document.getElementById('issueQty').value);
+        if(isNaN(q) || q <= 0) return alert('Invalid Quantity');
+        if(q > selectedPPEItemForIssue.qty) return alert('Insufficient Stock');
+        
+        const list = LocalDB.get('ppe', []);
+        const idx = list.findIndex(p => p.id === selectedPPEItemForIssue.id);
+        if(idx > -1){ 
+            list[idx].qty -= q;
+            LocalDB.set('ppe', list); 
+        }
+        
+        const logEntry = {
+            id: Date.now(),
+            date: document.getElementById('issueDate').value,
+            empName: document.getElementById('issueEmpName').value,
+            empID: document.getElementById('issueEmpID').value,
+            location: document.getElementById('issueLocation').value,
+            item: selectedPPEItemForIssue.name,
+            qty: q
+        };
+        const logs = LocalDB.get('ppe_logs', []);
+        logs.unshift(logEntry);
+        LocalDB.set('ppe_logs', logs);
+
+        document.getElementById('ppeIssueModal').style.display = 'none';
+        e.target.reset();
+        renderPPE();
+        renderPPELogs();
+    }
+    
+    function renderPPELogs(){
+        const logs = LocalDB.get('ppe_logs', []);
+        document.querySelector('#ppeLogTable tbody').innerHTML = logs.map(l => `
+            <tr>
+                <td>${l.date}</td><td>${escapeHtml(l.empName)}</td><td>${escapeHtml(l.empID)}</td><td>${escapeHtml(l.item)}</td><td>${l.qty}</td><td>${escapeHtml(l.location)}</td>
+                <td><button class="btn-danger btn-sm" onclick="deletePPELog(${l.id})">Delete</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function deletePPELog(id) {
+        if(!confirm('Delete this log entry?')) return;
+        const list = LocalDB.get('ppe_logs', []).filter(x => x.id !== id);
+        LocalDB.set('ppe_logs', list);
+        renderPPELogs();
+    }
+
+    function renderModules(){
+      const mods = LocalDB.get('modules', []);
+      const tbody = document.querySelector('#modTable tbody');
+      const recMod = document.getElementById('recMod');
+      if(tbody) tbody.innerHTML = mods.map(m => `<tr><td>${escapeHtml(m.name)}</td><td>${m.freq} months</td><td><button class="btn-danger btn-sm" onclick="deleteModule(${m.id})">Delete</button></td></tr>`).join('');
+      if(recMod) recMod.innerHTML = '<option value="">Select Module</option>' + mods.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+    }
+    
+    async function addModule(e){
+      e.preventDefault();
+      const modObj = { id: Date.now(), name: document.getElementById('modName').value, freq: parseInt(document.getElementById('modFreq').value)||0 };
+      
+      const mods = LocalDB.get('modules', []);
+      mods.push(modObj);
+      LocalDB.set('modules', mods);
+
+      e.target.reset(); renderModules();
+    }
+    
+    function deleteModule(id){ LocalDB.set('modules', LocalDB.get('modules', []).filter(m => m.id !== id));
+    renderModules(); }
+    
+    function renderRecords(){
+      const recs = LocalDB.get('records', []);
+      const today = new Date();
+      document.querySelector('#recTable tbody').innerHTML = recs.map(r => {
+        const next = new Date(r.nextDue);
+        const days = Math.ceil((next - today) / (1000*60*60*24));
+        const status = days < 0 ? 'Overdue' : 'Pending';
+        const cls = days < 0 ? 'status-expired' : (days <= 30 ? 'status-warning' : 'status-safe');
+        return `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.moduleName)}</td><td>${r.date}</td><td>${r.nextDue} <span class="status-badge ${cls}">${status}</span></td><td><button class="btn-danger btn-sm" onclick="deleteRecord(${r.id})">Delete</button></td></tr>`;
+      }).join('');
+    }
+    
+    async function addRecord(e){
+      e.preventDefault();
+      const modId = document.getElementById('recMod').value;
+      const mods = LocalDB.get('modules', []);
+      const mod = mods.find(m => String(m.id) === String(modId));
+      if(!mod){ alert('Select a valid module'); return; }
+      
+      const date = new Date(document.getElementById('recDate').value);
+      const next = new Date(date); next.setMonth(next.getMonth() + (mod.freq || 0));
+      const recObj = { id: Date.now(), name: document.getElementById('recName').value, moduleId: mod.id, moduleName: mod.name, date: document.getElementById('recDate').value, nextDue: next.toISOString().slice(0,10) };
+      const recs = LocalDB.get('records', []);
+      recs.unshift(recObj);
+      LocalDB.set('records', recs); 
+      
+      e.target.reset(); renderRecords();
+    }
+    
+    function deleteRecord(id){ LocalDB.set('records', LocalDB.get('records', []).filter(r => r.id !== id)); renderRecords();
+    }
+
+    async function addVisitor(e) {
+        e.preventDefault();
+        const otherChecked = document.getElementById('visPPEOtherChk').checked;
+        const otherText = document.getElementById('visPPEOtherText').value.trim();
+        const ppeBase = Array.from(document.querySelectorAll('input[name="ppe"]:checked')).map(n => n.value);
+        const ppe = ppeBase.map(v => v === 'Other' ? (otherChecked && otherText ? `Other: ${otherText}` : 'Other') : v);
+        const v = {
+          id: Date.now(),
+          name: document.getElementById('visName').value,
+          company: document.getElementById('visCompany').value,
+          factory: document.getElementById('visFactory').value,
+          mobile: document.getElementById('visMobile').value,
+          brief: document.getElementById('visBrief').checked ? 'Yes' : 'No',
+          time: new Date().toLocaleTimeString(),
+          ppe: ppe.join(', '),
+          person: document.getElementById('visPersonMeet').value,
+          purpose: document.getElementById('visPurpose').value
+        };
+        const list = LocalDB.get('visitors');
+        list.unshift(v);
+        LocalDB.set('visitors', list);
+        renderVisitors(); generateVisitorCertificate(v); e.target.reset();
+    }
+    function renderVisitors() {
+        const list = LocalDB.get('visitors', []);
+        document.querySelector('#visitorTable tbody').innerHTML = list.map(v => `
+            <tr><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.company)}</td><td>${escapeHtml(v.mobile||'')}</td>
+              <td>${escapeHtml(v.time)}</td><td>${escapeHtml(v.brief||'No')}</td><td>${escapeHtml(v.ppe||'')}</td><td>${escapeHtml(v.factory)}</td>
+              <td><button class="btn-danger btn-sm" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
+        `).join('');
+    }
+    function deleteVisitor(id){ LocalDB.set('visitors', LocalDB.get('visitors', []).filter(v => v.id !== id)); renderVisitors();
+    }
+    function generateVisitorCertificate(v){
+      const w = window.open('', '_blank');
+      if(w) {
+          w.document.write(`<html><head><title>Visitor Certificate</title><style>body{font-family:sans-serif;padding:40px;text-align:center;}.box{border:3px solid #0f9b63;padding:30px;max-width:700px;margin:0 auto;text-align:left;}.row{display:flex;justify-content:space-between;margin:12px 0;border-bottom:1px dashed #ccc;padding-bottom:5px;}.label{font-weight:700;color:#555;}</style></head><body><div class="box"><h2>Visitor Induction Certificate</h2><div class="row"><div><span class="label">Name:</span> ${escapeHtml(v.name)}</div><div><span class="label">Company:</span> ${escapeHtml(v.company)}</div></div><div class="row"><div><span class="label">Factory:</span> ${escapeHtml(v.factory)}</div><div><span class="label">Mobile:</span> ${escapeHtml(v.mobile)}</div></div><p>Declared safe for entry.</p></div></body></html>`);
+          w.document.close(); w.focus(); setTimeout(() => { w.print(); w.close(); }, 500);
+      } else alert('Popup blocked!');
+    }
+
+    function openPTWModal(){ populateFactorySelects();
+    document.getElementById('ptwModal').style.display = 'flex'; }
+    async function createPTW(e){
+      e.preventDefault();
+      const ptw = {
+        id: 'PTW-' + String(Date.now()).slice(-6),
+        date: document.getElementById('ptwDate').value,
+        type: document.getElementById('ptwType').value,
+        factory: document.getElementById('ptwFactory').value,
+        location: document.getElementById('ptwLocation').value,
+        requester: document.getElementById('ptwRequester').value,
+        status: document.getElementById('ptwStatus').value
+      };
+      const list = LocalDB.get('ptw', []);
+      list.unshift(ptw);
+      LocalDB.set('ptw', list);
+      document.getElementById('ptwModal').style.display = 'none';
+      renderPTWList(); e.target.reset(); updateBell();
+    }
+    function renderPTWList(statusFilter){
+        const filterFactory = document.getElementById('ptwFactoryFilter').value;
+        const keyword = (document.getElementById('ptwSearch').value || '').toLowerCase();
+        let list = LocalDB.get('ptw', []);
+        if (filterFactory) list = list.filter(x => x.factory === filterFactory);
+        if (statusFilter && statusFilter!=='all') list = list.filter(x => x.status && x.status.toLowerCase() === statusFilter.toLowerCase());
+        if (keyword) list = list.filter(x => [x.requester, x.location, x.type].some(v => (v||'').toLowerCase().includes(keyword)));
+        document.querySelector('#ptwTable tbody').innerHTML = list.map(p => `
+            <tr><td>${escapeHtml(p.id)}</td><td>${escapeHtml(p.date)}</td><td>${escapeHtml(p.type)}</td><td>${escapeHtml(p.factory)}</td><td>${escapeHtml(p.location||'')}</td><td>${escapeHtml(p.requester||'')}</td><td>${escapeHtml(p.status||'Pending')}</td>
+              <td><button class="btn-action btn-sm" onclick="updatePTWStatus('${p.id}','Approved')">Approve</button>
+              <button class="btn-danger btn-sm" onclick="updatePTWStatus('${p.id}','Rejected')">Reject</button>
+              <button class="btn-danger btn-sm" onclick="deletePTW('${p.id}')" style="margin-left:4px">X</button></td></tr>
+        `).join('');
+        refreshStats();
+    }
+    function updatePTWStatus(id, status){
+      const list = LocalDB.get('ptw', []);
+      const idx = list.findIndex(p => p.id === id);
+      if(idx>-1){ list[idx].status = status; LocalDB.set('ptw', list); renderPTWList(); updateBell();
+      }
+    }
+    function deletePTW(id) {
+        if(!confirm('Delete this Permit record completely?')) return;
+        LocalDB.set('ptw', LocalDB.get('ptw').filter(p => p.id !== id));
+        renderPTWList();
+        refreshStats();
+    }
+
+    // --- LEGAL REGISTER LOGIC ---
+    function renderLegalRegister() {
+        const list = LocalDB.get('legal', []);
+        const tbody = document.querySelector('#legalTable tbody');
+        if(!tbody) return;
+
+        const today = new Date();
+        tbody.innerHTML = list.map(item => {
+            const exp = new Date(item.expiry);
+            const diff = (exp - today) / (1000*60*60*24);
+            const status = diff <= 0 ? 'Expired' : (diff <= 30 ? 'Warning' : 'Valid');
+            const cls = diff <= 0 ? 'status-expired' : (diff <= 30 ? 'status-warning' : 'status-safe');
+            return `<tr>
+              <td>${escapeHtml(item.act)}</td><td>${escapeHtml(item.license)}</td><td>${escapeHtml(item.factory)}</td><td>${escapeHtml(item.issue)}</td><td>${escapeHtml(item.expiry)}</td>
+              <td><span class="status-badge ${cls}">${status}</span></td>
+              <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteLegalItem(${item.id})">Delete</button></td>
+            </tr>`;
+        }).join('');
+        checkAuth();
+    }
+    async function addLegalItem(e) {
+        e.preventDefault();
+        const obj = {
+            id: Date.now(),
+            act: document.getElementById('legAct').value,
+            license: document.getElementById('legLicense').value,
+            authority: document.getElementById('legAuthority').value,
+            factory: document.getElementById('legFactorySelect').value,
+            issue: document.getElementById('legIssue').value,
+            expiry: document.getElementById('legExpiry').value
+        };
+        const list = LocalDB.get('legal');
+        list.push(obj);
+        LocalDB.set('legal', list);
+        renderLegalRegister(); e.target.reset(); renderExpiryAlerts(); updateBell();
+    }
+    function deleteLegalItem(id) {
+        if(!confirm('Are you sure you want to delete this legal record?')) return;
+        LocalDB.set('legal', LocalDB.get('legal').filter(x => x.id !== id));
+        renderLegalRegister(); renderExpiryAlerts(); updateBell();
+    }
+    function renderExpiryAlerts() {
+        const list = LocalDB.get('legal', []);
+        const extinguishers = LocalDB.get('extinguishers', []);
+        const alerts = list.filter(x => (new Date(x.expiry) - new Date()) / (1000*60*60*24) <= 30);
+        const extAlerts = extinguishers.filter(x => x.due && (new Date(x.due) - new Date()) / (1000*60*60*24) <= 30);
+        const box = document.getElementById('expiryAlertSection');
+        if (alerts.length || extAlerts.length) {
+            box.innerHTML = `<div class="card expiry-alert-card" id="expiryCard"><div style="display:flex;justify-content:space-between"><h4>⚠️ Statutory & Safety Alerts</h4><button class="ghost-dark btn-sm" onclick="document.getElementById('expiryCard').remove()">Dismiss</button></div>` + 
+                alerts.map(a => `<div class="small">📋 ${escapeHtml(a.license)} (${escapeHtml(a.factory)}) expires on ${escapeHtml(a.expiry)}</div>`).join('') +
+                extAlerts.map(x => `<div class="small">🧯 Extinguisher ${escapeHtml(x.extID)} (${escapeHtml(x.factory)}) — ${extinguisherStatus(x.due).label}</div>`).join('') + `</div>`;
+        } else box.innerHTML = '';
+    }
+    function printLegalRegister() {
+        const table = document.getElementById('legalTable').outerHTML;
+        const w = window.open('', '_blank');
+        w.document.write(`<html><head><title>Legal Register</title><style>table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;}.admin-only{display:none;}</style></head><body><h2>Legal Register</h2>${table}</body></html>`);
+        w.document.close(); setTimeout(() => { w.print(); }, 500);
+    }
+
+    // --- HIRA LOGIC ---
+    async function addHIRA(e){
+        e.preventDefault();
+        const obj = {
+            id: Date.now(),
+            activity: document.getElementById('hiraActivity').value,
+            hazard: document.getElementById('hiraHazard').value,
+            risk: document.getElementById('hiraRisk').value,
+            controls: document.getElementById('hiraControls').value,
+            factory: document.getElementById('hiraFactory').value
+        };
+        const list = LocalDB.get('hira', []);
+        list.push(obj);
+        LocalDB.set('hira', list);
+        e.target.reset(); renderHIRA();
+    }
+    function renderHIRA(){
+        const list = LocalDB.get('hira', []);
+        document.querySelector('#hiraTable tbody').innerHTML = list.map(h => {
+             const cls = h.risk === 'High' ? 'risk-high' : (h.risk === 'Medium' ? 'risk-med' : 'risk-low');
+             return `<tr class="${cls}"><td>${escapeHtml(h.factory)}</td><td>${escapeHtml(h.activity)}</td><td>${escapeHtml(h.hazard)}</td><td>${h.risk}</td><td>${escapeHtml(h.controls)}</td><td><button class="btn-danger btn-sm" onclick="deleteHIRA(${h.id})">Delete</button></td></tr>`;
+        }).join('');
+    }
+    function deleteHIRA(id){ if(!confirm('Delete risk entry?')) return; LocalDB.set('hira', LocalDB.get('hira', []).filter(h => h.id !== id)); renderHIRA(); }
+    function printHIRA(){
+        const table = document.getElementById('hiraTable').outerHTML;
+        const w = window.open('', '_blank');
+        w.document.write(`<html><head><title>HIRA Register</title><style>table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;}.admin-only{display:none;}</style></head><body><h2>HIRA Register</h2>${table}</body></html>`);
+        w.document.close(); setTimeout(() => { w.print(); }, 500);
+    }
+
+    // --- WASTE LOGIC ---
+    async function addWaste(e){
+        e.preventDefault();
+        const qtyVal = parseFloat(document.getElementById('wasteQty').value);
+        if (isNaN(qtyVal) || qtyVal <= 0) { alert('Enter a valid quantity'); return; }
+        const obj = {
+            id: Date.now(),
+            date: document.getElementById('wasteDate').value,
+            factory: document.getElementById('wasteFactory').value,
+            entryType: document.getElementById('wasteEntryType').value,
+            type: document.getElementById('wasteType').value,
+            qty: qtyVal,
+            method: document.getElementById('wasteMethod').value
+        };
+        const list = LocalDB.get('waste', []);
+        list.unshift(obj);
+        LocalDB.set('waste', list);
+        e.target.reset(); renderWaste();
+    }
+    function renderWaste(){
+        const list = LocalDB.get('waste', []);
+        let haz = 0, rec = 0;
+        list.forEach(w => {
+            const signedQty = (w.entryType === 'Disposed' ? -1 : 1) * (w.qty || 0);
+            if(w.type === 'Hazardous' || w.type === 'Bio-Medical') haz += signedQty;
+            else rec += signedQty;
+        });
+        document.getElementById('wasteHazTotal').innerText = haz.toFixed(2);
+        document.getElementById('wasteRecTotal').innerText = rec.toFixed(2);
+        
+        document.querySelector('#wasteTable tbody').innerHTML = list.map(w => {
+            const entryType = w.entryType || 'Disposed';
+            const badgeCls = entryType === 'Stored' ? 'status-safe' : 'status-expired';
+            return `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.factory)}</td><td>${escapeHtml(w.type)}</td>
+             <td><span class="status-badge ${badgeCls}">${escapeHtml(entryType)}</span></td>
+             <td>${w.qty}</td><td>${escapeHtml(w.method)}</td>
+             <td><button class="btn-danger btn-sm" onclick="deleteWaste(${w.id})">Delete</button></td></tr>`;
+        }).join('');
+    }
+    function deleteWaste(id){ if(!confirm('Delete waste record?')) return; LocalDB.set('waste', LocalDB.get('waste', []).filter(w => w.id !== id)); renderWaste(); }
+
+
+    function exportJSON() {
+        const data = { 
+            reports: LocalDB.get('reports'), factories: LocalDB.get('factories'), notices: LocalDB.get('notices'), 
+            ppe: LocalDB.get('ppe'), visitors: LocalDB.get('visitors'), ptw: LocalDB.get('ptw'), 
+            legal: LocalDB.get('legal'), extinguishers: LocalDB.get('extinguishers'), modules: LocalDB.get('modules'), 
+            records: LocalDB.get('records'), gallery: LocalDB.get('gallery'), policies: LocalDB.get('policies'), 
+            users: LocalDB.get('users'), audits: LocalDB.get('audits'),
+            hira: LocalDB.get('hira'), waste: LocalDB.get('waste'), ppe_logs: LocalDB.get('ppe_logs')
+        };
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+        a.download = `HSE_Backup_${Date.now()}.json`;
+        a.click();
+    }
+
+    function toggleMobileMenu() {
+        const m = document.getElementById('mobileMenu');
+        const btn = document.getElementById('mobileMenuBtn');
+        const opening = m.style.display !== 'flex';
+        m.style.display = opening ? 'flex' : 'none';
+        if (btn) btn.innerText = opening ? '✕' : '☰';
+        if (opening) {
+            document.getElementById('mobileNavList').innerHTML = document.querySelector('#desktopNav ul').innerHTML;
+            document.getElementById('mobileNavList').addEventListener('click', function(ev){ if(ev.target.closest('a')) { ev.preventDefault(); m.style.display = 'none'; if (btn) btn.innerText = '☰'; try { new Function(ev.target.closest('a').getAttribute('onclick'))(); } catch(e){} } }, { once:true });
+        }
+    }
+
+    function readFileAsDataURL(file){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    window.onload = async () => {
+        await loadFromCloud(); // pull the shared spreadsheet before we render anything
+        checkAuth();
+        navTo('home');
+        startCloudPolling();
+        const headerEl = document.querySelector('header');
+        if (headerEl) {
+            window.addEventListener('scroll', () => {
+                headerEl.classList.toggle('scrolled', window.scrollY > 8);
+            }, { passive: true });
+        }
+    };
+    // Gallery & Policies
+    async function renderPolicies(){
+      const list = LocalDB.get('policies', []);
+      const gallery = document.getElementById('policyGallery');
+      const isAdmin = currentUser && currentUser.role==='admin';
+      if(!gallery) return;
+      gallery.innerHTML = list.map(p => `
+        <div class="policy-card" onclick="openPolicyFile('${p.data || p.url}')">
+            ${isAdmin ? `<div class="policy-del" onclick="event.stopPropagation(); delPolicy(${p.id})">X</div>` : ''}
+            <div class="policy-icon">📄</div>
+            <div class="policy-content"><div class="policy-title">${escapeHtml(p.title)}</div><div class="policy-sub">Click to view</div></div>
+        </div>`).join('') ||
+        '<p style="color:grey;grid-column:1/-1;text-align:center;">No policies uploaded yet.</p>';
+    }
+    
+    function openPolicyFile(data) { const win = window.open();
+    if(win) win.document.write(`<iframe src="${data}" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe>`); }
+    
+    window.uploadPolicy = async function(e){ 
+        e.preventDefault();
+        const file = document.getElementById('polFile').files[0]; 
+        if(!file) return alert('Choose file'); 
+        try { 
+            const base64 = await readFileAsDataURL(file);
+            if(base64.length > 50000) {
+                 alert("Warning: This PDF/Image is large and may not save to Google Sheets properly.");
+            }
+            const polObj = { id: Date.now(), title: document.getElementById('polTitle').value, data: base64 };
+            const pols = LocalDB.get('policies'); 
+            pols.push(polObj); 
+            LocalDB.set('policies', pols);
+
+        } catch(err){ console.error(err); } 
+        e.target.reset(); 
+        renderPolicies();
+    };
+    
+    window.delPolicy = async function(id){ if(!confirm('Delete?')) return; LocalDB.set('policies', LocalDB.get('policies').filter(x=>x.id!==id)); renderPolicies();
+    }
+
+    async function renderGallery(){
+      const photos = LocalDB.get('gallery', []);
+      const grid = document.getElementById('galleryGrid');
+      const isAdmin = currentUser && currentUser.role==='admin';
+      if(!grid) return;
+      grid.innerHTML = photos.map((p, i)=>`<div class="gallery-item"><img src="${p.url||p.data}" loading="lazy" onclick="openFullscreen(${i})">${isAdmin?`<div class="gal-del" onclick="event.stopPropagation();delPhoto(${p.id})">X</div>`:''}</div>`).join('') ||
+        '<p style="color:grey;grid-column:1/-1;text-align:center;">No photos uploaded yet.</p>';
+    }
+
+    function updateFsCounter(){
+      const photos = LocalDB.get('gallery', []);
+      const el = document.getElementById('fsCounter');
+      if (el) el.innerText = photos.length ? `${currentPhotoIndex + 1} / ${photos.length}` : '';
+    }
+    function openFullscreen(index){ currentPhotoIndex = index; const photos = LocalDB.get('gallery', []);
+      document.getElementById('fsImg').src = (photos[index] || {}).url || (photos[index] || {}).data || ''; document.getElementById('fullscreenModal').style.display='flex';
+      updateFsCounter();
+    }
+    function moveGallery(step){ const photos = LocalDB.get('gallery', []); if(!photos.length) return;
+    currentPhotoIndex = (currentPhotoIndex + step + photos.length) % photos.length; document.getElementById('fsImg').src = (photos[currentPhotoIndex].url || photos[currentPhotoIndex].data);
+    updateFsCounter();
+    }
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('fullscreenModal');
+      if (!modal || modal.style.display !== 'flex') return;
+      if (e.key === 'ArrowLeft') moveGallery(-1);
+      else if (e.key === 'ArrowRight') moveGallery(1);
+      else if (e.key === 'Escape') modal.style.display = 'none';
+    });
+    
+    window.uploadPhoto = async function(){ 
+        const file = document.getElementById('galUpload').files[0];
+        if(!file) return alert('Select file'); 
+        try { 
+            const base64 = await readFileAsDataURL(file);
+            if(base64.length > 50000) {
+                 alert("Warning: This image is large and may not save to Google Sheets properly. Try a smaller image.");
+            }
+
+            const photoObj = { id: Date.now(), url: base64 };
+            const photos = LocalDB.get('gallery'); 
+            photos.push(photoObj); 
+            LocalDB.set('gallery', photos); 
+            
+        } catch(err) { console.error(err);
+        } 
+        renderGallery(); 
+    };
+    
+    window.delPhoto = async function(id){ if(!confirm('Delete?')) return; LocalDB.set('gallery', LocalDB.get('gallery').filter(x=>x.id!==id)); renderGallery();
+    }
+    
+    function toggleAI() {
+      const box = document.getElementById('aiAssistantBox');
+      box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+      if(box.style.display === 'flex') document.getElementById('aiInput').focus();
+    }
+
+    async function sendAIMessage() {
+      const input = document.getElementById('aiInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      appendMessage('user', msg);
+      input.value = '';
+
+      const typing = document.getElementById('aiTyping');
+      typing.style.display = 'block';
+      const msgContainer = document.getElementById('aiMessages');
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+
+      setTimeout(() => {
+        typing.style.display = 'none';
+        
+        let reply = "I'm here to support your HSE goals. For specific policies or PTW access, please use the navigation bar.";
+        const lower = msg.toLowerCase();
+        if (lower.includes('contact') || lower.includes('phone') || lower.includes('call') || lower.includes('number')) {
+          reply = "You can view emergency contacts in the Contact tab. Immediate HSE support: Nasiruddin Sk (Jangalpur) or Basiruddin Mallik (Dhulagarh).";
+        } else if (lower.includes('ppe') || lower.includes('mask') || lower.includes('helmet') || lower.includes('goggles')) {
+          reply = "PPE inventory can be managed in the PPE tab. Please ensure stock levels remain above the reorder limit.";
+        } else if (lower.includes('ptw') || lower.includes('permit')) {
+          reply = "Permit to Work (PTW) can be requested under the PTW tab. Ensure you fill out the factory, location, and risk assessment.";
+        } else if (lower.includes('hira') || lower.includes('risk')) {
+          reply = "HIRA entries are available in the HIRA tab. You can add activities, hazard assessments, and control measures there.";
+        } else if (lower.includes('waste') || lower.includes('disposal') || lower.includes('hazardous')) {
+          reply = "Waste log is maintained under Waste Mgmt. Hazardous waste should be logged accurately to calculate net stock.";
+        }
+        
+        appendMessage('bot', reply);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }, 1000);
+    }
+
+    function appendMessage(sender, text) {
+      const container = document.getElementById('aiMessages');
+      const div = document.createElement('div');
+      div.className = `ai-msg ai-${sender}`;
+      div.innerText = text;
+      container.appendChild(div);
+    }
+
+    // Expose functions globally to maintain working HTML inline event attributes in module context
+    window.doLogin = doLogin;
+    window.doLogout = doLogout;
+    window.showLogin = showLogin;
+    window.navTo = navTo;
+    window.requireAuthAndGo = requireAuthAndGo;
+    window.openNotifications = openNotifications;
+    window.clearBellNotifications = clearBellNotifications;
+    window.addNotice = addNotice;
+    window.toggleNoticeActive = toggleNoticeActive;
+    window.deleteNotice = deleteNotice;
+    window.openSiteStats = openSiteStats;
+    window.loadFactoryData = loadFactoryData;
+    window.saveSiteStats = saveSiteStats;
+    window.addUser = addUser;
+    window.deleteUser = deleteUser;
+    window.switchAdminTab = switchAdminTab;
+    window.addExtinguisher = addExtinguisher;
+    window.renderExtinguisherList = renderExtinguisherList;
+    window.deleteExtinguisher = deleteExtinguisher;
+    window.printExtRegister = printExtRegister;
+    window.toggleAuditForm = toggleAuditForm;
+    window.addAudit = addAudit;
+    window.deleteAudit = deleteAudit;
+    window.deleteReport = deleteReport;
+    window.submitIncident = submitIncident;
+    window.addPPEItem = addPPEItem;
+    window.restockPPEItem = restockPPEItem;
+    window.deletePPEItem = deletePPEItem;
+    window.initiatePPEIssue = initiatePPEIssue;
+    window.confirmIssuePPE = confirmIssuePPE;
+    window.deletePPELog = deletePPELog;
+    window.addModule = addModule;
+    window.deleteModule = deleteModule;
+    window.addRecord = addRecord;
+    window.deleteRecord = deleteRecord;
+    window.addVisitor = addVisitor;
+    window.deleteVisitor = deleteVisitor;
+    window.openPTWModal = openPTWModal;
+    window.createPTW = createPTW;
+    window.renderPTWList = renderPTWList;
+    window.updatePTWStatus = updatePTWStatus;
+    window.deletePTW = deletePTW;
+    window.addLegalItem = addLegalItem;
+    window.deleteLegalItem = deleteLegalItem;
+    window.printLegalRegister = printLegalRegister;
+    window.addHIRA = addHIRA;
+    window.deleteHIRA = deleteHIRA;
+    window.printHIRA = printHIRA;
+    window.addWaste = addWaste;
+    window.deleteWaste = deleteWaste;
+    window.exportJSON = exportJSON;
+    window.toggleMobileMenu = toggleMobileMenu;
+    window.openPolicyFile = openPolicyFile;
+    window.uploadPolicy = uploadPolicy;
+    window.delPolicy = delPolicy;
+    window.openFullscreen = openFullscreen;
+    window.moveGallery = moveGallery;
+    window.uploadPhoto = uploadPhoto;
+    window.delPhoto = delPhoto;
+    window.toggleAI = toggleAI;
+    window.sendAIMessage = sendAIMessage;
+    window.appendMessage = appendMessage;
+  </script>
+</body>
+</html>
