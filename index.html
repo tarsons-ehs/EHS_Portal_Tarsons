@@ -61,31 +61,47 @@
 
   /* ---------- Header ---------- */
   header{
-    position:sticky;top:0;z-index:60;color:white;padding:12px 0;
+    position:sticky;top:0;z-index:60;color:white;padding:10px 0 0;
     background:linear-gradient(100deg,var(--accent-3),var(--accent-2) 70%);
     box-shadow:0 8px 24px rgba(2,10,20,.35);
     transition:box-shadow .25s ease, padding .25s ease;
     backdrop-filter:blur(10px);
   }
-  header.scrolled{padding:8px 0;box-shadow:0 12px 34px rgba(2,10,20,.55)}
-  .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 8px}
+  header.scrolled{padding:7px 0 0;box-shadow:0 12px 34px rgba(2,10,20,.55)}
+  .header-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 8px;flex-wrap:wrap}
   .brand{display:flex;gap:12px;align-items:center}
   .logo{
     width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#ffffff,#d8fff2);
     display:flex;align-items:center;justify-content:center;color:var(--accent-3);font-weight:900;
-    box-shadow:0 6px 16px rgba(0,0,0,.25);font-size:14px;letter-spacing:-.5px;
+    box-shadow:0 6px 16px rgba(0,0,0,.25);font-size:14px;letter-spacing:-.5px;flex:0 0 auto;
   }
   .site-title .name{font-weight:800;font-size:16px;line-height:1.1;letter-spacing:.5px}
   .site-title .subject{font-size:11px;opacity:.85;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
-  nav ul{display:flex;gap:2px;list-style:none;padding:0;margin:0;flex-wrap:wrap}
-  nav a{
-    color:rgba(255,255,255,0.92);text-decoration:none;padding:9px 13px;border-radius:9px;
-    font-weight:600;font-size:13.5px;transition:all .18s ease;display:inline-block;
-  }
-  nav a:hover{background:rgba(255,255,255,0.16);transform:translateY(-1px)}
 
-  .bell-wrapper{position:relative;cursor:pointer;margin-right:2px;display:flex;align-items:center;
-    width:38px;height:38px;justify-content:center;border-radius:10px;transition:background .18s;}
+  /* Right-hand user cluster: bell / sync / user / login, always grouped to the right */
+  .header-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+  .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);padding:5px 12px 5px 6px;border-radius:999px}
+  .user-chip .avatar{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--accent-3);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:0 0 auto}
+  #userBadge{font-size:12.5px;font-weight:600;color:white;line-height:1.2}
+
+  /* Nav strip: single-line, horizontally scrollable, never wraps regardless of item count or screen width */
+  .nav-strip{position:relative;margin-top:10px}
+  .nav-strip ul{display:flex;gap:6px;list-style:none;padding:9px 20px 12px;margin:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-behavior:smooth}
+  .nav-strip ul::-webkit-scrollbar{display:none}
+  .nav-strip::before, .nav-strip::after{content:'';position:absolute;top:0;bottom:0;width:24px;z-index:2;pointer-events:none}
+  .nav-strip::before{left:0;background:linear-gradient(90deg,var(--accent-3),transparent)}
+  .nav-strip::after{right:0;background:linear-gradient(270deg,var(--accent-2),transparent)}
+  nav a{
+    color:rgba(255,255,255,0.92);text-decoration:none;padding:9px 16px;border-radius:999px;
+    font-weight:600;font-size:13.5px;transition:all .18s ease;display:inline-block;white-space:nowrap;
+    background:rgba(255,255,255,.08);flex:0 0 auto;
+  }
+  nav a:hover{background:rgba(255,255,255,0.2);transform:translateY(-1px)}
+  nav a.active{background:rgba(255,255,255,.96);color:var(--accent-3);box-shadow:0 4px 14px rgba(0,0,0,.22)}
+
+  .bell-wrapper{position:relative;cursor:pointer;margin-right:0;display:flex;align-items:center;
+    width:38px;height:38px;justify-content:center;border-radius:10px;transition:background .18s;flex:0 0 auto}
   .bell-wrapper:hover{background:rgba(255,255,255,.15)}
   .bell-icon{font-size:19px;color:white}
   .bell-badge{
@@ -233,8 +249,6 @@
   /* ---------- Mobile nav ---------- */
   @media (max-width:980px){
     .hero{grid-template-columns:1fr}
-    #desktopNav{display:none}
-    #mobileMenuBtn{display:flex !important}
     .gallery{grid-template-columns:repeat(2,1fr)}
     form .two-cols{grid-template-columns:1fr}
     .container{padding:12px}
@@ -254,6 +268,9 @@
     .site-title .name{font-size:14px}
     .site-title .subject{font-size:9.5px}
     .logo{width:40px;height:40px;font-size:12px}
+    #userBadge{display:none}
+    .user-chip{padding:5px}
+    nav a{padding:8px 13px;font-size:12.5px}
   }
   #mobileMenu{
     display:none;position:fixed;left:0;top:0;right:0;bottom:0;
@@ -315,39 +332,43 @@
   <div id="mobileMenu"><ul id="mobileNavList"></ul></div>
 
   <header>
-    <div class="container nav">
+    <div class="container header-top">
       <div class="brand">
         <div class="logo">TPL</div>
         <div class="site-title"><div class="name">TARSONS </div>
         <div class="subtitle"><div class="subject">HSE Portal</div></div></div>
       </div>
-      <nav id="desktopNav">
-        <ul>
-          <li><a href="#" onclick="navTo('home')">Home</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('dashboard')">Incidents</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('hira')">HIRA</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('waste')">Waste Mgmt</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('ppe')">PPE</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('ptw')">PTW</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('training')">Training</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('legal')">Legal</a></li>
-          <li><a href="#" onclick="navTo('policies')">Policies</a></li>
-          <li><a href="#" onclick="requireAuthAndGo('adminSection')" class="admin-only">Admin</a></li>
-        </ul>
-      </nav>
-      <div style="display:flex;gap:10px;align-items:center">
+      <div class="header-actions">
         <div class="bell-wrapper" onclick="openNotifications()">
            <span class="bell-icon">🔔</span>
            <span id="bellBadge" class="bell-badge">0</span>
         </div>
-        
-        <span id="cloudSyncBadge" style="display:none;font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;margin-right:4px;align-items:center;">● Syncing…</span>
-        <div id="userBadge" style="font-size:13px;font-weight:600;color:white;"></div>
+        <span id="cloudSyncBadge" style="display:none;font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;align-items:center;">● Syncing…</span>
+        <div class="user-chip" id="userChip" style="display:none">
+          <span class="avatar" id="userAvatar">U</span>
+          <div id="userBadge"></div>
+        </div>
         <button class="ghost" id="loginBtn" onclick="showLogin()">Login</button>
         <button class="ghost" id="logoutBtn" onclick="doLogout()" style="display:none">Logout</button>
         <button class="ghost" id="mobileMenuBtn" onclick="toggleMobileMenu()" style="display:none">☰</button>
       </div>
     </div>
+    <nav id="desktopNav" class="nav-strip">
+      <ul>
+        <li><a href="#" data-nav="home" onclick="navTo('home')">🏠 Home</a></li>
+        <li><a href="#" data-nav="dashboard" onclick="requireAuthAndGo('dashboard')">🚨 Incidents</a></li>
+        <li><a href="#" data-nav="hira" onclick="requireAuthAndGo('hira')">⚠️ HIRA</a></li>
+        <li><a href="#" data-nav="waste" onclick="requireAuthAndGo('waste')">♻️ Waste Mgmt</a></li>
+        <li><a href="#" data-nav="ppe" onclick="requireAuthAndGo('ppe')">🦺 PPE</a></li>
+        <li><a href="#" data-nav="ptw" onclick="requireAuthAndGo('ptw')">📝 PTW</a></li>
+        <li><a href="#" data-nav="training" onclick="requireAuthAndGo('training')">🎓 Training</a></li>
+        <li><a href="#" data-nav="legal" onclick="requireAuthAndGo('legal')">⚖️ Legal</a></li>
+        <li><a href="#" data-nav="gallery" onclick="navTo('gallery')">🖼️ EHS Gallery</a></li>
+        <li><a href="#" data-nav="policies" onclick="navTo('policies')">📄 Policies</a></li>
+        <li><a href="#" data-nav="contact" onclick="navTo('contact')">📞 Contact</a></li>
+        <li><a href="#" data-nav="adminSection" onclick="requireAuthAndGo('adminSection')" class="admin-only">🛠️ Admin</a></li>
+      </ul>
+    </nav>
   </header>
 
   <main>
@@ -767,7 +788,7 @@
 
     <section id="gallery" style="display:none" class="container">
       <div class="card">
-        <h2>Gallery</h2>
+        <h2>🖼️ EHS Gallery</h2>
         <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
           <h4>Upload Photo</h4>
           <input id="galUpload" type="file" accept="image/*">
@@ -1106,6 +1127,7 @@
 
     function checkAuth() {
         const badge = document.getElementById('userBadge');
+        const chip = document.getElementById('userChip');
         const isAdmin = !!(currentUser && currentUser.role === 'admin');
         // Toggle a body class instead of forcing inline display:block on every
         // .admin-only element — the old approach broke table cells/rows/list
@@ -1114,10 +1136,13 @@
         document.body.classList.toggle('is-admin', isAdmin);
         if (currentUser) {
             badge.innerText = `${currentUser.role.toUpperCase()}: ${currentUser.username}`;
+            document.getElementById('userAvatar').innerText = (currentUser.username || '?').trim().charAt(0).toUpperCase();
+            chip.style.display = 'flex';
             document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
         } else {
             badge.innerText = '';
+            chip.style.display = 'none';
             document.getElementById('loginBtn').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'none';
         }
@@ -1154,6 +1179,11 @@
         if(!target) return;
         lastNavId = id;
         target.style.display = 'block';
+        document.querySelectorAll('#desktopNav a[data-nav]').forEach(a => {
+            const isActive = a.getAttribute('data-nav') === id;
+            a.classList.toggle('active', isActive);
+            if (isActive) a.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
         
         if (id === 'home') { renderNotices(); renderFactories(); renderChart(); refreshStats(); renderExpiryAlerts(); }
         if (id === 'adminSection') { populateFactorySelects(); renderAdminSection(); renderAudits(); }
@@ -2008,6 +2038,12 @@
             window.addEventListener('scroll', () => {
                 headerEl.classList.toggle('scrolled', window.scrollY > 8);
             }, { passive: true });
+        }
+        const navUl = document.querySelector('.nav-strip ul');
+        if (navUl) {
+            navUl.addEventListener('wheel', (e) => {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { navUl.scrollLeft += e.deltaY; e.preventDefault(); }
+            }, { passive: false });
         }
     };
     // Gallery & Policies
