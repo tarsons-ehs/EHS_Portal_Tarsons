@@ -136,7 +136,7 @@ function getAllData() {
  * That's it — it'll run once a day and only emails if something is
  * actually due soon or overdue, so you won't get spammed on quiet days.
  */
-const ALERT_EMAIL = "PASTE_YOUR_EMAIL_HERE";
+const ALERT_EMAIL = "sayan.saha@tarsons.in";
 
 function sendOverdueAlertEmail() {
   if (!ALERT_EMAIL || ALERT_EMAIL.indexOf('PASTE_YOUR') === 0) return; // not configured yet
