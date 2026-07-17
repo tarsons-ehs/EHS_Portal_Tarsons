@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <link rel="icon" type="png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b7dbf">
   <title>TARSONS PRODUCTS LIMITED — HSE Portal</title>
+  <link rel="manifest" href="manifest.json">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
   <!-- Import map to safely resolve standard Firebase package imports directly in the browser -->
@@ -205,11 +207,20 @@
   table{width:100%;border-collapse:collapse;color:var(--text-dark);margin-top:10px;font-size:13.5px}
   th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left}
   th{background:rgba(11,125,191,.06);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:var(--accent-3)}
+
+  /* ---------- Dark mode ---------- */
+  body.dark-theme{--panel:#132234;--text-dark:#e8f0f2;--border:#24384a;--muted:#8fa3ad}
+  body.dark-theme .card{background:linear-gradient(180deg,#101e2c,#0c1826);border-color:rgba(255,255,255,.08)}
+  body.dark-theme .factory-card,body.dark-theme .gallery-item{background:#101e2c;border-color:#24384a}
+  body.dark-theme input,body.dark-theme select,body.dark-theme textarea{background:#0c1826;color:#e8f0f2;border-color:#24384a}
+  body.dark-theme th{background:rgba(255,255,255,.04)}
+  body.dark-theme .tile{background:linear-gradient(135deg,rgba(18,183,106,0.14),rgba(11,125,191,0.14))}
+  body.dark-theme #loginBox,body.dark-theme #fsBox,body.dark-theme .pdf-grid,body.dark-theme #auditFormBox,body.dark-theme #manHoursInputs{background:#101e2c !important;color:#e8f0f2}
   tbody tr{transition:background .15s}
   tbody tr:hover{background:rgba(18,183,106,.05)}
 
   /* ---------- Modals ---------- */
-  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal{
+  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal, #qrModal{
     position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,20,0.72);display:none;
     align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);
     animation:overlayIn .18s ease both;padding:16px;
@@ -339,6 +350,7 @@
         <div class="subtitle"><div class="subject">HSE Portal</div></div></div>
       </div>
       <div class="header-actions">
+        <button class="ghost" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark mode" style="width:38px;padding:9px 0">🌙</button>
         <div class="bell-wrapper" onclick="openNotifications()">
            <span class="bell-icon">🔔</span>
            <span id="bellBadge" class="bell-badge">0</span>
@@ -395,6 +407,8 @@
               <div class="tile"><div class="small">Total Reports</div><div class="big" id="totalReports">0</div></div>
               <div class="tile"><div class="small">Accident Ratio</div><div class="big" id="accRatio">0%</div></div>
               <div class="tile"><div class="small">Open PTWs</div><div class="big" id="openPTWs">0</div></div>
+              <div class="tile" title="Total Recordable Incident Rate (per 200,000 man-hours)"><div class="small">TRIR</div><div class="big" id="trirTile">–</div></div>
+              <div class="tile" title="Lost Time Injury Frequency Rate (per 1,000,000 man-hours)"><div class="small">LTIFR</div><div class="big" id="ltifrTile">–</div></div>
             </div>
             
             <div id="factoriesContainer" class="factory-grid"></div>
@@ -496,7 +510,10 @@
         <h2>Admin Management</h2>
         <div class="admin-tabs">
             <div class="admin-tab-btn active" id="tabExt" onclick="switchAdminTab('ext')">Fire Extinguishers</div>
+            <div class="admin-tab-btn" id="tabCapa" onclick="switchAdminTab('capa')">CAPA Tracker</div>
             <div class="admin-tab-btn" id="tabAudit" onclick="switchAdminTab('audit')">Safety Audits</div>
+            <div class="admin-tab-btn" id="tabActivity" onclick="switchAdminTab('activity')">Activity Log</div>
+            <div class="admin-tab-btn" id="tabSettings" onclick="switchAdminTab('settings')">Settings</div>
             <div class="admin-tab-btn" id="tabUsers" onclick="switchAdminTab('users')">Manage Users</div>
         </div>
         <div id="extContainer">
@@ -527,10 +544,54 @@
                     <select id="extFilter" onchange="renderExtinguisherList()" style="width:150px">
                         <option value="">All Locations</option>
                     </select>
+                    <button class="ghost-dark btn-sm" onclick="exportTableToExcel('extTable','Fire_Extinguisher_Register')">⬇ Excel</button>
                     <button class="ghost-dark" onclick="printExtRegister()">Print Report</button>
                  </div>
             </div>
-            <div style="overflow-x:auto"><table id="extTable"><thead><tr><th>Factory</th><th>ID</th><th>Type</th><th>Capacity</th><th>Due Date</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+            <div style="overflow-x:auto"><table id="extTable"><thead><tr><th>Factory</th><th>ID</th><th>Type</th><th>Capacity</th><th>Due Date</th><th>Status</th><th class="admin-only">QR</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="capaContainer" style="display:none">
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+                <h4>New Corrective / Preventive Action</h4>
+                <form onsubmit="addCAPA(event)">
+                    <div class="two-cols">
+                        <select id="capaFactory" required></select>
+                        <select id="capaSource" required>
+                            <option value="">Source</option>
+                            <option>Incident</option><option>Audit</option><option>Inspection</option><option>Manual</option>
+                        </select>
+                    </div>
+                    <textarea id="capaDesc" placeholder="Action description..." style="margin-top:5px" required></textarea>
+                    <div class="two-cols" style="margin-top:5px">
+                        <input id="capaOwner" placeholder="Owner / Responsible person" required>
+                        <input id="capaDue" type="date" title="Target Date" required>
+                    </div>
+                    <button type="submit" class="primary" style="margin-top:5px">Add Action</button>
+                </form>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Open & Closed Actions</h3>
+                <button class="ghost-dark btn-sm" onclick="exportTableToExcel('capaTable','CAPA_Tracker')">⬇ Excel</button>
+            </div>
+            <div style="overflow-x:auto"><table id="capaTable"><thead><tr><th>Factory</th><th>Source</th><th>Description</th><th>Owner</th><th>Due</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="activityContainer" style="display:none">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>Recent Activity</h3>
+                <span class="small" style="color:var(--muted)">Last 200 actions across the portal, most recent first.</span>
+            </div>
+            <div style="overflow-x:auto"><table id="activityTable"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="settingsContainer" style="display:none">
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+                <h4>Monthly Man-Hours (for TRIR / LTIFR)</h4>
+                <p class="small" style="color:var(--muted)">Enter each factory's approximate monthly man-hours so the home dashboard can calculate injury frequency rates.</p>
+                <div id="manHoursInputs" class="two-cols"></div>
+                <button class="primary btn-sm" style="margin-top:8px" onclick="saveFactorySettings()">Save</button>
+            </div>
         </div>
         
         <div id="auditContainer" style="display:none">
@@ -582,6 +643,7 @@
                   <select id="newRole" required>
                     <option value="">Select Role</option>
                     <option value="admin">admin</option>
+                    <option value="safetyofficer">safety officer</option>
                     <option value="user">user</option>
                   </select>
                 </div>
@@ -750,7 +812,10 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2>Legal Register</h2>
-            <button class="ghost-dark" onclick="printLegalRegister()">🖨️ Print / Download</button>
+            <div style="display:flex;gap:8px">
+                <button class="ghost-dark btn-sm" onclick="exportTableToExcel('legalTable','Legal_Register')">⬇ Excel</button>
+                <button class="ghost-dark" onclick="printLegalRegister()">🖨️ Print / Download</button>
+            </div>
         </div>
         
         <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent-3);">
@@ -905,6 +970,15 @@
       <button id="fsPrev" class="ghost-dark btn-sm" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);" onclick="moveGallery(-1)">◀</button>
       <button id="fsNext" class="ghost-dark btn-sm" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);" onclick="moveGallery(1)">▶</button>
      <img id="fsImg" src="" alt="Fullscreen image" style="width:100%;height:auto;max-height:80vh;object-fit:contain;border-radius:8px">
+    </div>
+  </div>
+
+  <div id="qrModal" onclick="if(event.target.id==='qrModal') this.style.display='none'">
+    <div style="width:90%;max-width:320px;background:white;padding:20px;border-radius:12px;text-align:center;">
+      <h4 id="qrModalLabel" style="margin-bottom:10px"></h4>
+      <img id="qrModalImg" src="" alt="QR code" style="width:100%;max-width:240px;border-radius:8px">
+      <p class="small" style="margin-top:8px;color:var(--muted)">Scan or print this tag and attach it near the extinguisher.</p>
+      <button class="primary btn-sm" style="margin-top:8px" onclick="document.getElementById('qrModal').style.display='none'">Close</button>
     </div>
   </div>
 
@@ -1205,6 +1279,7 @@
         const legal = LocalDB.get('legal', []);
         const ptw = LocalDB.get('ptw', []);
         const extinguishers = LocalDB.get('extinguishers', []);
+        const capa = LocalDB.get('capa', []);
         const today = new Date();
         
         let count = 0;
@@ -1220,6 +1295,9 @@
             const diff = (new Date(x.due) - today) / (1000*60*60*24);
             if (diff <= 30) count++;
         });
+        capa.forEach(x => {
+            if (x.status !== 'Closed' && x.due && new Date(x.due) < today) count++;
+        });
         const badge = document.getElementById('bellBadge');
         if(count > 0){
             badge.style.display = 'flex';
@@ -1233,6 +1311,7 @@
         const legal = LocalDB.get('legal', []);
         const ptw = LocalDB.get('ptw', []);
         const extinguishers = LocalDB.get('extinguishers', []);
+        const capa = LocalDB.get('capa', []);
         const today = new Date();
         let html = '';
         const expiring = legal.filter(x => (new Date(x.expiry) - today) / (1000*60*60*24) <= 30);
@@ -1250,6 +1329,14 @@
             extDue.forEach(x => {
                 const st = extinguisherStatus(x.due);
                 html += `<li><b>${escapeHtml(x.extID)}</b> (${escapeHtml(x.factory)}) — <span class="status-pill ${st.cls}">${st.label}</span></li>`;
+            });
+            html += '</ul>';
+        }
+        const overdueCapa = capa.filter(x => x.status !== 'Closed' && x.due && new Date(x.due) < today);
+        if (overdueCapa.length > 0) {
+            html += '<h4>🛠️ Overdue CAPA Actions</h4><ul style="padding-left:20px;margin-bottom:10px">';
+            overdueCapa.forEach(x => {
+                html += `<li><b>${escapeHtml(x.desc.substring(0,60))}</b> — owner: ${escapeHtml(x.owner)} (${escapeHtml(x.factory)})</li>`;
             });
             html += '</ul>';
         }
@@ -1357,6 +1444,20 @@
         const severe = reports.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
         const ratio = reports.length > 0 ? ((severe / reports.length) * 100).toFixed(1) : '0';
         document.getElementById('accRatio').innerText = ratio + '%';
+
+        // TRIR / LTIFR — approximate, based on incident severity vs configured man-hours.
+        // Recordable = High or Fatal severity; Lost-time = Fatal severity (closest proxy available in this data model).
+        const settings = LocalDB.get('factorySettings', {});
+        const totalManHours = Object.values(settings).reduce((sum, v) => sum + (Number(v) || 0), 0);
+        const recordable = reports.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
+        const lostTime = reports.filter(r => r.sev === 'Fatal').length;
+        if (totalManHours > 0) {
+            document.getElementById('trirTile').innerText = ((recordable * 200000) / totalManHours).toFixed(2);
+            document.getElementById('ltifrTile').innerText = ((lostTime * 1000000) / totalManHours).toFixed(2);
+        } else {
+            document.getElementById('trirTile').innerText = '–';
+            document.getElementById('ltifrTile').innerText = '–';
+        }
     }
 
     function renderChart() {
@@ -1394,7 +1495,7 @@
         const selectIds = [
             'factorySelect', 'extFactory', 'extFilter', 'auditFactory', 
             'visFactory', 'ptwFactory', 'ptwFactoryFilter', 'legFactorySelect', 'issueLocation',
-            'hiraFactory', 'wasteFactory'
+            'hiraFactory', 'wasteFactory', 'capaFactory'
         ];
 
         selectIds.forEach(id => {
@@ -1467,26 +1568,157 @@
       }
       users.push({ id: Date.now() + Math.floor(Math.random()*1000), user: username, role, empId, password });
       LocalDB.set('users', users);
+      logActivity('User added', `${username} (${role})`);
       e.target.reset();
       renderUsers();
     }
     function deleteUser(id){
       if(!confirm('Delete this user?')) return;
+      const target = LocalDB.get('users', []).find(u => u.id === id);
       const users = LocalDB.get('users', []).filter(u => u.id !== id);
       LocalDB.set('users', users);
+      if (target) logActivity('User deleted', target.user);
       renderUsers();
     }
 
     function switchAdminTab(t) {
-        document.getElementById('tabExt').className = t === 'ext' ? 'admin-tab-btn active' : 'admin-tab-btn';
-        document.getElementById('tabAudit').className = t === 'audit' ? 'admin-tab-btn active' : 'admin-tab-btn';
-        document.getElementById('tabUsers').className = t === 'users' ? 'admin-tab-btn active' : 'admin-tab-btn';
-        document.getElementById('extContainer').style.display = t === 'ext' ? 'block' : 'none';
-        document.getElementById('auditContainer').style.display = t === 'audit' ? 'block' : 'none';
-        document.getElementById('usersContainer').style.display = t === 'users' ? 'block' : 'none';
+        const tabs = ['ext','capa','audit','activity','settings','users'];
+        const idMap = { ext:'tabExt', capa:'tabCapa', audit:'tabAudit', activity:'tabActivity', settings:'tabSettings', users:'tabUsers' };
+        const containerMap = { ext:'extContainer', capa:'capaContainer', audit:'auditContainer', activity:'activityContainer', settings:'settingsContainer', users:'usersContainer' };
+        tabs.forEach(id => {
+            document.getElementById(idMap[id]).className = t === id ? 'admin-tab-btn active' : 'admin-tab-btn';
+            document.getElementById(containerMap[id]).style.display = t === id ? 'block' : 'none';
+        });
         if (t === 'users') renderUsers();
+        if (t === 'capa') { populateFactorySelects(); renderCAPA(); }
+        if (t === 'activity') renderActivityLog();
+        if (t === 'settings') renderFactorySettingsForm();
     }
     function renderAdminSection() { populateFactorySelects(); renderExtinguisherList(); }
+
+    // --- Activity Log ---
+    function logActivity(action, detail) {
+      const log = LocalDB.get('auditLog', []);
+      log.unshift({
+        ts: new Date().toISOString(),
+        user: (currentUser && currentUser.username) || 'System',
+        action, detail: detail || ''
+      });
+      if (log.length > 200) log.length = 200; // keep it bounded
+      LocalDB.set('auditLog', log);
+    }
+    function renderActivityLog() {
+      const log = LocalDB.get('auditLog', []);
+      document.querySelector('#activityTable tbody').innerHTML = log.map(e => `
+        <tr><td>${new Date(e.ts).toLocaleString()}</td><td>${escapeHtml(e.user)}</td><td>${escapeHtml(e.action)}</td><td>${escapeHtml(e.detail)}</td></tr>
+      `).join('') || '<tr><td colspan="4" style="text-align:center;color:grey">No activity recorded yet.</td></tr>';
+    }
+
+    // --- CAPA Tracker ---
+    function capaStatusInfo(item) {
+      if (item.status === 'Closed') return { label: 'Closed', cls: 'status-ok' };
+      if (!item.due) return { label: item.status, cls: '' };
+      const days = Math.ceil((new Date(item.due) - new Date(new Date().toDateString())) / (1000*60*60*24));
+      if (days < 0) return { label: 'Overdue', cls: 'status-overdue' };
+      if (days <= 7) return { label: 'Due Soon', cls: 'status-due-soon' };
+      return { label: item.status, cls: '' };
+    }
+    function addCAPA(e) {
+      e.preventDefault();
+      const obj = {
+        id: Date.now(),
+        factory: document.getElementById('capaFactory').value,
+        source: document.getElementById('capaSource').value,
+        desc: document.getElementById('capaDesc').value.trim(),
+        owner: document.getElementById('capaOwner').value.trim(),
+        due: document.getElementById('capaDue').value,
+        status: 'Open'
+      };
+      const list = LocalDB.get('capa', []);
+      list.push(obj);
+      LocalDB.set('capa', list);
+      logActivity('CAPA added', `${obj.desc.substring(0,60)} (${obj.factory})`);
+      e.target.reset();
+      renderCAPA();
+      updateBell();
+    }
+    function renderCAPA() {
+      const list = LocalDB.get('capa', []);
+      document.querySelector('#capaTable tbody').innerHTML = list.map(x => {
+        const st = capaStatusInfo(x);
+        return `<tr class="${st.cls}"><td>${escapeHtml(x.factory)}</td><td>${escapeHtml(x.source)}</td><td>${escapeHtml(x.desc)}</td><td>${escapeHtml(x.owner)}</td><td>${x.due||'-'}</td>
+        <td>
+          <select onchange="updateCAPAStatus(${x.id}, this.value)" style="width:auto;padding:4px 8px;font-size:12px">
+            <option ${x.status==='Open'?'selected':''}>Open</option>
+            <option ${x.status==='In Progress'?'selected':''}>In Progress</option>
+            <option ${x.status==='Closed'?'selected':''}>Closed</option>
+          </select> <span class="status-pill ${st.cls}">${st.label}</span>
+        </td>
+        <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteCAPA(${x.id})">Del</button></td></tr>`;
+      }).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No CAPA items yet.</td></tr>';
+    }
+    function updateCAPAStatus(id, status) {
+      const list = LocalDB.get('capa', []);
+      const item = list.find(x => x.id === id);
+      if (item) { item.status = status; LocalDB.set('capa', list); logActivity('CAPA status updated', `${item.desc.substring(0,40)} → ${status}`); }
+      renderCAPA(); updateBell();
+    }
+    function deleteCAPA(id) {
+      if (!confirm('Delete this CAPA record?')) return;
+      LocalDB.set('capa', LocalDB.get('capa', []).filter(x => x.id !== id));
+      renderCAPA(); updateBell();
+    }
+
+    // --- Factory Settings (man-hours for TRIR/LTIFR) ---
+    function renderFactorySettingsForm() {
+      const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
+      const settings = LocalDB.get('factorySettings', {});
+      document.getElementById('manHoursInputs').innerHTML = factories.map(f => `
+        <div><label class="small">${f} — Monthly Man-Hours</label><input type="number" min="0" id="mh_${f}" value="${settings[f] || ''}"></div>
+      `).join('');
+    }
+    function saveFactorySettings() {
+      const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
+      const settings = {};
+      factories.forEach(f => { const el = document.getElementById('mh_' + f); if (el) settings[f] = Number(el.value) || 0; });
+      LocalDB.set('factorySettings', settings);
+      logActivity('Man-hours updated', 'Factory settings saved');
+      alert('Saved. TRIR / LTIFR on the Home tab will use these figures.');
+      refreshStats();
+    }
+
+    // --- Excel export (any table id) ---
+    function exportTableToExcel(tableId, filename) {
+      const table = document.getElementById(tableId);
+      if (!table || typeof XLSX === 'undefined') { alert('Export library not loaded — check your internet connection.'); return; }
+      const wb = XLSX.utils.table_to_book(table, { sheet: 'Data' });
+      XLSX.writeFile(wb, (filename || 'export') + '.xlsx');
+    }
+
+    // --- QR code for an extinguisher ---
+    function showExtinguisherQR(factory, extID) {
+      const data = encodeURIComponent(`${factory} | Extinguisher ${extID}`);
+      const url = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${data}`;
+      document.getElementById('qrModalImg').src = url;
+      document.getElementById('qrModalLabel').innerText = `${factory} — ${extID}`;
+      document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    // --- Dark mode ---
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark-theme');
+      localStorage.setItem('hse_theme', isDark ? 'dark' : 'light');
+      document.getElementById('themeToggleBtn').innerText = isDark ? '☀️' : '🌙';
+    }
+    (function initTheme(){
+      if (localStorage.getItem('hse_theme') === 'dark') {
+        document.addEventListener('DOMContentLoaded', () => {
+          document.body.classList.add('dark-theme');
+          const btn = document.getElementById('themeToggleBtn');
+          if (btn) btn.innerText = '☀️';
+        });
+      }
+    })();
     
     async function addExtinguisher(e) {
         e.preventDefault();
@@ -1502,6 +1734,7 @@
         const list = LocalDB.get('extinguishers');
         list.push(obj);
         LocalDB.set('extinguishers', list);
+        logActivity('Extinguisher added', `${obj.extID} (${obj.factory})`);
         e.target.reset();
         renderExtinguisherList();
         updateBell(); renderExpiryAlerts();
@@ -1521,12 +1754,15 @@
             const st = extinguisherStatus(x.due);
             return `<tr class="${st.cls}"><td>${x.factory}</td><td>${x.extID}</td><td>${x.type}</td><td>${x.cap}</td><td>${x.due||'-'}</td>
             <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+            <td class="admin-only"><button class="ghost-dark btn-sm" onclick="showExtinguisherQR('${escapeHtml(x.factory)}','${escapeHtml(x.extID)}')">QR</button></td>
             <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteExtinguisher(${x.id})">Del</button></td></tr>`;
-        }).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No extinguishers registered yet.</td></tr>';
+        }).join('') || '<tr><td colspan="8" style="text-align:center;color:grey">No extinguishers registered yet.</td></tr>';
     }
     function deleteExtinguisher(id) {
         if(!confirm('Delete this extinguisher record?')) return;
+        const target = LocalDB.get('extinguishers').find(x => x.id === id);
         LocalDB.set('extinguishers', LocalDB.get('extinguishers').filter(x => x.id !== id));
+        if (target) logActivity('Extinguisher deleted', `${target.extID} (${target.factory})`);
         renderExtinguisherList();
         updateBell(); renderExpiryAlerts();
     }
@@ -1594,6 +1830,7 @@
         const list = LocalDB.get('reports');
         list.push(report);
         LocalDB.set('reports', list);
+        logActivity('Incident reported', `${report.sev} severity at ${report.name ? 'reported by ' + report.name : 'unknown location'}`);
         alert('Incident Submitted');
         e.target.reset();
         renderDashboard();
@@ -1897,23 +2134,29 @@
         const list = LocalDB.get('legal');
         list.push(obj);
         LocalDB.set('legal', list);
+        logActivity('Legal item added', `${obj.license} (${obj.factory})`);
         renderLegalRegister(); e.target.reset(); renderExpiryAlerts(); updateBell();
     }
     function deleteLegalItem(id) {
         if(!confirm('Are you sure you want to delete this legal record?')) return;
+        const target = LocalDB.get('legal').find(x => x.id === id);
         LocalDB.set('legal', LocalDB.get('legal').filter(x => x.id !== id));
+        if (target) logActivity('Legal item deleted', `${target.license} (${target.factory})`);
         renderLegalRegister(); renderExpiryAlerts(); updateBell();
     }
     function renderExpiryAlerts() {
         const list = LocalDB.get('legal', []);
         const extinguishers = LocalDB.get('extinguishers', []);
+        const capa = LocalDB.get('capa', []);
         const alerts = list.filter(x => (new Date(x.expiry) - new Date()) / (1000*60*60*24) <= 30);
         const extAlerts = extinguishers.filter(x => x.due && (new Date(x.due) - new Date()) / (1000*60*60*24) <= 30);
+        const capaAlerts = capa.filter(x => x.status !== 'Closed' && x.due && new Date(x.due) < new Date());
         const box = document.getElementById('expiryAlertSection');
-        if (alerts.length || extAlerts.length) {
+        if (alerts.length || extAlerts.length || capaAlerts.length) {
             box.innerHTML = `<div class="card expiry-alert-card" id="expiryCard"><div style="display:flex;justify-content:space-between"><h4>⚠️ Statutory & Safety Alerts</h4><button class="ghost-dark btn-sm" onclick="document.getElementById('expiryCard').remove()">Dismiss</button></div>` + 
                 alerts.map(a => `<div class="small">📋 ${escapeHtml(a.license)} (${escapeHtml(a.factory)}) expires on ${escapeHtml(a.expiry)}</div>`).join('') +
-                extAlerts.map(x => `<div class="small">🧯 Extinguisher ${escapeHtml(x.extID)} (${escapeHtml(x.factory)}) — ${extinguisherStatus(x.due).label}</div>`).join('') + `</div>`;
+                extAlerts.map(x => `<div class="small">🧯 Extinguisher ${escapeHtml(x.extID)} (${escapeHtml(x.factory)}) — ${extinguisherStatus(x.due).label}</div>`).join('') +
+                capaAlerts.map(x => `<div class="small">🛠️ CAPA overdue: ${escapeHtml(x.desc.substring(0,50))} (${escapeHtml(x.factory)})</div>`).join('') + `</div>`;
         } else box.innerHTML = '';
     }
     function printLegalRegister() {
@@ -2129,13 +2372,14 @@
             const photos = LocalDB.get('gallery'); 
             photos.push(photoObj); 
             LocalDB.set('gallery', photos); 
+            logActivity('Gallery photo uploaded', file.name || '');
             
         } catch(err) { console.error(err);
         } 
         renderGallery(); 
     };
     
-    window.delPhoto = async function(id){ if(!confirm('Delete?')) return; LocalDB.set('gallery', LocalDB.get('gallery').filter(x=>x.id!==id)); renderGallery();
+    window.delPhoto = async function(id){ if(!confirm('Delete?')) return; LocalDB.set('gallery', LocalDB.get('gallery').filter(x=>x.id!==id)); logActivity('Gallery photo deleted', ''); renderGallery();
     }
     
     function toggleAI() {
@@ -2250,6 +2494,24 @@
     window.toggleAI = toggleAI;
     window.sendAIMessage = sendAIMessage;
     window.appendMessage = appendMessage;
+    window.addCAPA = addCAPA;
+    window.updateCAPAStatus = updateCAPAStatus;
+    window.deleteCAPA = deleteCAPA;
+    window.renderCAPA = renderCAPA;
+    window.renderActivityLog = renderActivityLog;
+    window.saveFactorySettings = saveFactorySettings;
+    window.renderFactorySettingsForm = renderFactorySettingsForm;
+    window.exportTableToExcel = exportTableToExcel;
+    window.showExtinguisherQR = showExtinguisherQR;
+    window.toggleTheme = toggleTheme;
+  </script>
+  <script>
+    // Installable/offline support — only works when served over http(s), not opened as a local file:// path.
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker not registered:', err));
+      });
+    }
   </script>
 </body>
 </html>
