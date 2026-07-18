@@ -264,10 +264,13 @@
     form .two-cols{grid-template-columns:1fr}
     .container{padding:12px}
     .card{padding:16px;border-radius:14px}
-    button, input, select, textarea{font-size:16px} /* prevents iOS auto-zoom on focus */
-    button{min-height:42px}
+    input, select, textarea{font-size:16px} /* prevents iOS auto-zoom on focus — buttons don't need this */
+    button:not(.btn-sm){min-height:40px}
     .admin-tab-btn{padding:9px 16px;font-size:13px}
     #cloudSyncBadge{display:none !important}
+    /* Header/table action rows are laid out inline as "display:flex" — let them
+       wrap on narrow screens instead of squeezing buttons together or overflowing. */
+    div[style*="display:flex"]{flex-wrap:wrap}
   }
   @media (max-width:560px){
     h2{font-size:19px} h3{font-size:16px}
@@ -282,6 +285,9 @@
     #userBadge{display:none}
     .user-chip{padding:5px}
     nav a{padding:8px 13px;font-size:12.5px}
+    button{font-size:13px}
+    .btn-sm{padding:6px 10px;font-size:11.5px;margin-left:3px}
+    td button, td .btn-sm{margin:2px 2px 2px 0}
   }
   #mobileMenu{
     display:none;position:fixed;left:0;top:0;right:0;bottom:0;
@@ -378,7 +384,7 @@
         <li><a href="#" data-nav="gallery" onclick="navTo('gallery')">🖼️ EHS Gallery</a></li>
         <li><a href="#" data-nav="policies" onclick="navTo('policies')">📄 Policies</a></li>
         <li><a href="#" data-nav="contact" onclick="navTo('contact')">📞 Contact</a></li>
-        <li><a href="#" data-nav="adminSection" onclick="requireAuthAndGo('adminSection')" class="admin-only">🛠️ Admin</a></li>
+        <li><a href="#" data-nav="adminSection" onclick="requireAdminAndGo('adminSection')" class="admin-only">🛠️ Admin</a></li>
       </ul>
     </nav>
   </header>
@@ -415,9 +421,11 @@
             
             <div id="expiryAlertSection"></div>
             
-            <div style="margin-top:20px; height: 300px;">
+            <div style="margin-top:20px;">
               <h3>Incident Trend</h3>
-              <canvas id="incidentChart"></canvas>
+              <div style="height:280px; position:relative;">
+                <canvas id="incidentChart"></canvas>
+              </div>
             </div>
         </div>
       </div>
@@ -455,7 +463,7 @@
         </div>
         
         <div style="overflow-x:auto">
-          <table id="hiraTable"><thead><tr><th>Factory</th><th>Activity</th><th>Hazard</th><th>Risk Level</th><th>Controls</th><th>Action</th></tr></thead><tbody></tbody></table>
+          <table id="hiraTable"><thead><tr><th>Factory</th><th>Activity</th><th>Hazard</th><th>Risk Level</th><th>Controls</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </section>
@@ -500,7 +508,7 @@
         </div>
 
         <div style="overflow-x:auto">
-          <table id="wasteTable"><thead><tr><th>Date</th><th>Factory</th><th>Type</th><th>Entry</th><th>Qty (Kg)</th><th>Location / Vendor</th><th>Action</th></tr></thead><tbody></tbody></table>
+          <table id="wasteTable"><thead><tr><th>Date</th><th>Factory</th><th>Type</th><th>Entry</th><th>Qty (Kg)</th><th>Location / Vendor</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </section>
@@ -679,7 +687,7 @@
         </div>
 
         <div style="overflow-x:auto; margin-top:10px">
-          <table id="dashTable"><thead><tr><th>Date</th><th>Reporter</th><th>Severity</th><th>Description</th><th>Action</th></tr></thead><tbody></tbody></table>
+          <table id="dashTable"><thead><tr><th>Date</th><th>Reporter</th><th>Severity</th><th>Description</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
         <button class="primary" onclick="exportJSON()" style="margin-top:15px">Export Data</button>
       </div>
@@ -699,12 +707,12 @@
         </div>
         <h3>Current Stock</h3>
         <div style="overflow-x:auto; margin-bottom: 20px;">
-            <table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+            <table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
         </div>
         
         <h3 style="border-top:1px solid #eee; padding-top:15px;">PPE Issue Log</h3>
         <div style="overflow-x:auto; max-height:250px;">
-             <table id="ppeLogTable"><thead><tr><th>Date</th><th>Employee</th><th>Emp ID</th><th>Item</th><th>Qty</th><th>Location</th><th>Action</th></tr></thead><tbody></tbody></table>
+             <table id="ppeLogTable"><thead><tr><th>Date</th><th>Employee</th><th>Emp ID</th><th>Item</th><th>Qty</th><th>Location</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </section>
@@ -720,9 +728,9 @@
             </form>
         </div>
         <h3>Modules</h3>
-        <table id="modTable" style="margin-bottom:20px"><thead><tr><th>Module</th><th>Frequency</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        <table id="modTable" style="margin-bottom:20px"><thead><tr><th>Module</th><th>Frequency</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
         
-        <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
              <h4>Record Completion</h4>
             <form onsubmit="addRecord(event)">
                 <div class="two-cols"><input id="recName" placeholder="Employee Name" required><select id="recMod" required><option value="">Select Module</option></select></div>
@@ -730,9 +738,9 @@
             </form>
         </div>
         <h3>Records</h3>
-         <table id="recTable"><thead><tr><th>Employee</th><th>Module</th><th>Date</th><th>Next Due</th><th>Actions</th></tr></thead><tbody></tbody></table>
+         <table id="recTable"><thead><tr><th>Employee</th><th>Module</th><th>Date</th><th>Next Due</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
 
-        <div class="visitor-card" style="margin-top:30px; border-top: 2px solid #eee; padding-top:20px;">
+        <div class="visitor-card admin-only" style="margin-top:30px; border-top: 2px solid #eee; padding-top:20px;">
           <h3>Visitor Safety Induction</h3>
           <p style="margin:6px 0 12px;color:var(--muted)">Record visitor induction, issue PPE and generate visitor induction certificate.</p>
           <div style="display:grid; gap:8px; margin-bottom:12px;">
@@ -800,7 +808,7 @@
           </div>
           <div style="overflow-x:auto;">
             <table id="ptwTable">
-              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th class="admin-only">Actions</th></tr></thead>
               <tbody></tbody>
              </table>
           </div>
@@ -1274,6 +1282,11 @@
     }
 
     function requireAuthAndGo(id) { if (!currentUser) showLogin(); else navTo(id); }
+    function requireAdminAndGo(id) {
+        if (!currentUser) { showLogin(); return; }
+        if (currentUser.role !== 'admin') { alert('This section is restricted to Admin accounts.'); return; }
+        navTo(id);
+    }
 
     function updateBell() {
         const legal = LocalDB.get('legal', []);
@@ -1802,7 +1815,7 @@
       const list = LocalDB.get('audits', []);
       document.querySelector('#auditTable tbody').innerHTML = list.map(a => `
         <tr><td>${escapeHtml(a.date)}</td><td>${escapeHtml(a.factory)}</td><td>${escapeHtml(a.auditor)}</td><td>${escapeHtml(String(a.score))}</td>
-        <td><button class="btn-danger btn-sm" onclick="deleteAudit(${a.id})">Delete</button></td></tr>
+        <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteAudit(${a.id})">Delete</button></td></tr>
       `).join('');
     }
     function deleteAudit(id){ LocalDB.set('audits', LocalDB.get('audits', []).filter(a => a.id !== id)); renderAudits(); }
@@ -1811,7 +1824,7 @@
         const list = LocalDB.get('reports', []);
         document.querySelector('#dashTable tbody').innerHTML = list.map((r) => `
             <tr><td>${r.date}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td>
-            <td><button class="btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button></td></tr>
+            <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button></td></tr>
         `).join('');
     }
     function deleteReport(id){
@@ -1868,10 +1881,10 @@
                 <td>${p.qty}</td>
                 <td>${escapeHtml(p.unit)}</td>
                 <td><span class="status-badge ${p.qty <= p.reorder ? 'status-expired' : 'status-safe'}">${p.qty <= p.reorder ? 'Low' : 'OK'}</span></td>
-                <td>
+                <td class="admin-only">
                     <button class="btn-action btn-sm" onclick="initiatePPEIssue(${p.id})">Issue</button>
-                    <button class="btn-action btn-sm admin-only" onclick="restockPPEItem(${p.id})">+ Stock</button>
-                    <button class="btn-danger btn-sm admin-only" onclick="deletePPEItem(${p.id})">Delete</button>
+                    <button class="btn-action btn-sm" onclick="restockPPEItem(${p.id})">+ Stock</button>
+                    <button class="btn-danger btn-sm" onclick="deletePPEItem(${p.id})">Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -1946,7 +1959,7 @@
         document.querySelector('#ppeLogTable tbody').innerHTML = logs.map(l => `
             <tr>
                 <td>${l.date}</td><td>${escapeHtml(l.empName)}</td><td>${escapeHtml(l.empID)}</td><td>${escapeHtml(l.item)}</td><td>${l.qty}</td><td>${escapeHtml(l.location)}</td>
-                <td><button class="btn-danger btn-sm" onclick="deletePPELog(${l.id})">Delete</button></td>
+                <td class="admin-only"><button class="btn-danger btn-sm" onclick="deletePPELog(${l.id})">Delete</button></td>
             </tr>
         `).join('');
     }
@@ -1962,7 +1975,7 @@
       const mods = LocalDB.get('modules', []);
       const tbody = document.querySelector('#modTable tbody');
       const recMod = document.getElementById('recMod');
-      if(tbody) tbody.innerHTML = mods.map(m => `<tr><td>${escapeHtml(m.name)}</td><td>${m.freq} months</td><td><button class="btn-danger btn-sm" onclick="deleteModule(${m.id})">Delete</button></td></tr>`).join('');
+      if(tbody) tbody.innerHTML = mods.map(m => `<tr><td>${escapeHtml(m.name)}</td><td>${m.freq} months</td><td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteModule(${m.id})">Delete</button></td></tr>`).join('');
       if(recMod) recMod.innerHTML = '<option value="">Select Module</option>' + mods.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
     }
     
@@ -1988,7 +2001,7 @@
         const days = Math.ceil((next - today) / (1000*60*60*24));
         const status = days < 0 ? 'Overdue' : 'Pending';
         const cls = days < 0 ? 'status-expired' : (days <= 30 ? 'status-warning' : 'status-safe');
-        return `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.moduleName)}</td><td>${r.date}</td><td>${r.nextDue} <span class="status-badge ${cls}">${status}</span></td><td><button class="btn-danger btn-sm" onclick="deleteRecord(${r.id})">Delete</button></td></tr>`;
+        return `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.moduleName)}</td><td>${r.date}</td><td>${r.nextDue} <span class="status-badge ${cls}">${status}</span></td><td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteRecord(${r.id})">Delete</button></td></tr>`;
       }).join('');
     }
     
@@ -2081,7 +2094,7 @@
         if (keyword) list = list.filter(x => [x.requester, x.location, x.type].some(v => (v||'').toLowerCase().includes(keyword)));
         document.querySelector('#ptwTable tbody').innerHTML = list.map(p => `
             <tr><td>${escapeHtml(p.id)}</td><td>${escapeHtml(p.date)}</td><td>${escapeHtml(p.type)}</td><td>${escapeHtml(p.factory)}</td><td>${escapeHtml(p.location||'')}</td><td>${escapeHtml(p.requester||'')}</td><td>${escapeHtml(p.status||'Pending')}</td>
-              <td><button class="btn-action btn-sm" onclick="updatePTWStatus('${p.id}','Approved')">Approve</button>
+              <td class="admin-only"><button class="btn-action btn-sm" onclick="updatePTWStatus('${p.id}','Approved')">Approve</button>
               <button class="btn-danger btn-sm" onclick="updatePTWStatus('${p.id}','Rejected')">Reject</button>
               <button class="btn-danger btn-sm" onclick="deletePTW('${p.id}')" style="margin-left:4px">X</button></td></tr>
         `).join('');
@@ -2186,7 +2199,7 @@
         const list = LocalDB.get('hira', []);
         document.querySelector('#hiraTable tbody').innerHTML = list.map(h => {
              const cls = h.risk === 'High' ? 'risk-high' : (h.risk === 'Medium' ? 'risk-med' : 'risk-low');
-             return `<tr class="${cls}"><td>${escapeHtml(h.factory)}</td><td>${escapeHtml(h.activity)}</td><td>${escapeHtml(h.hazard)}</td><td>${h.risk}</td><td>${escapeHtml(h.controls)}</td><td><button class="btn-danger btn-sm" onclick="deleteHIRA(${h.id})">Delete</button></td></tr>`;
+             return `<tr class="${cls}"><td>${escapeHtml(h.factory)}</td><td>${escapeHtml(h.activity)}</td><td>${escapeHtml(h.hazard)}</td><td>${h.risk}</td><td>${escapeHtml(h.controls)}</td><td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteHIRA(${h.id})">Delete</button></td></tr>`;
         }).join('');
     }
     function deleteHIRA(id){ if(!confirm('Delete risk entry?')) return; LocalDB.set('hira', LocalDB.get('hira', []).filter(h => h.id !== id)); renderHIRA(); }
@@ -2233,7 +2246,7 @@
             return `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.factory)}</td><td>${escapeHtml(w.type)}</td>
              <td><span class="status-badge ${badgeCls}">${escapeHtml(entryType)}</span></td>
              <td>${w.qty}</td><td>${escapeHtml(w.method)}</td>
-             <td><button class="btn-danger btn-sm" onclick="deleteWaste(${w.id})">Delete</button></td></tr>`;
+             <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteWaste(${w.id})">Delete</button></td></tr>`;
         }).join('');
     }
     function deleteWaste(id){ if(!confirm('Delete waste record?')) return; LocalDB.set('waste', LocalDB.get('waste', []).filter(w => w.id !== id)); renderWaste(); }
@@ -2437,6 +2450,7 @@
     window.showLogin = showLogin;
     window.navTo = navTo;
     window.requireAuthAndGo = requireAuthAndGo;
+    window.requireAdminAndGo = requireAdminAndGo;
     window.openNotifications = openNotifications;
     window.clearBellNotifications = clearBellNotifications;
     window.addNotice = addNotice;
