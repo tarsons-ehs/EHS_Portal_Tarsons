@@ -215,7 +215,7 @@
   body.dark-theme input,body.dark-theme select,body.dark-theme textarea{background:#0c1826;color:#e8f0f2;border-color:#24384a}
   body.dark-theme th{background:rgba(255,255,255,.04)}
   body.dark-theme .tile{background:linear-gradient(135deg,rgba(18,183,106,0.14),rgba(11,125,191,0.14))}
-  body.dark-theme #loginBox,body.dark-theme #fsBox,body.dark-theme .pdf-grid,body.dark-theme #auditFormBox,body.dark-theme #manHoursInputs{background:#101e2c !important;color:#e8f0f2}
+  body.dark-theme #loginBox,body.dark-theme #fsBox,body.dark-theme .pdf-grid,body.dark-theme #auditFormBox{background:#101e2c !important;color:#e8f0f2}
   tbody tr{transition:background .15s}
   tbody tr:hover{background:rgba(18,183,106,.05)}
 
@@ -413,8 +413,6 @@
               <div class="tile"><div class="small">Total Reports</div><div class="big" id="totalReports">0</div></div>
               <div class="tile"><div class="small">Accident Ratio</div><div class="big" id="accRatio">0%</div></div>
               <div class="tile"><div class="small">Open PTWs</div><div class="big" id="openPTWs">0</div></div>
-              <div class="tile" title="Total Recordable Incident Rate (per 200,000 man-hours)"><div class="small">TRIR</div><div class="big" id="trirTile">–</div></div>
-              <div class="tile" title="Lost Time Injury Frequency Rate (per 1,000,000 man-hours)"><div class="small">LTIFR</div><div class="big" id="ltifrTile">–</div></div>
               <div class="tile" title="Near Miss + Unsafe Condition reports logged"><div class="small">Near Miss / Unsafe</div><div class="big" id="nearMissTile">0</div></div>
             </div>
             
@@ -607,16 +605,10 @@
         <div id="settingsContainer" style="display:none">
             <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--danger);">
                 <h4>Cloud Connection Diagnostics</h4>
-                <p class="small" style="color:var(--muted)">Gallery, Policy, TRIR/LTIFR, and email alerts all depend on the connection to your Google Sheet backend. Test it here if anything isn't showing up for other users.</p>
+                <p class="small" style="color:var(--muted)">Gallery, Policy, and email alerts all depend on the connection to your Google Sheet backend. Test it here if anything isn't showing up for other users.</p>
                 <button class="ghost-dark btn-sm" id="testCloudBtn" onclick="testCloudConnection()">🔌 Test Cloud Connection</button>
                 <button class="ghost-dark btn-sm" id="testDriveBtn" onclick="testDriveUpload()">🖼️ Test Drive Upload</button>
                 <span id="testCloudStatus" class="small" style="margin-left:10px;color:var(--muted)"></span>
-            </div>
-            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
-                <h4>Monthly Man-Hours (for TRIR / LTIFR)</h4>
-                <p class="small" style="color:var(--muted)">Enter each factory's approximate monthly man-hours so the home dashboard can calculate injury frequency rates.</p>
-                <div id="manHoursInputs" class="two-cols"></div>
-                <button class="primary btn-sm" style="margin-top:8px" onclick="saveFactorySettings()">Save</button>
             </div>
             <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
                 <h4>Email Alerts</h4>
@@ -1083,7 +1075,7 @@
     <span style="cursor:pointer" onclick="toggleAI()">×</span>
   </div>
   <div id="aiMessages">
-    <div class="ai-msg ai-bot">Hi! I'm the HSE Portal assistant. Ask me things like "what's overdue", "how many open PTWs", "TRIR", or "PPE stock" — I'll check the live data and answer.</div>
+    <div class="ai-msg ai-bot">Hi! I'm the HSE Portal assistant. Ask me things like "what's overdue", "how many open PTWs", "near miss", or "PPE stock" — I'll check the live data and answer.</div>
     <div id="aiTyping" class="typing">Bot is typing...</div>
   </div>
   <div id="aiInputArea">
@@ -1516,20 +1508,6 @@
         const severe = actualIncidents.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
         const ratio = actualIncidents.length > 0 ? ((severe / actualIncidents.length) * 100).toFixed(1) : '0';
         document.getElementById('accRatio').innerText = ratio + '%';
-
-        // TRIR / LTIFR — approximate, based on incident severity vs configured man-hours.
-        // Recordable = High or Fatal severity; Lost-time = Fatal severity (closest proxy available in this data model).
-        const settings = LocalDB.get('factorySettings', {});
-        const totalManHours = Object.values(settings).reduce((sum, v) => sum + (Number(v) || 0), 0);
-        const recordable = actualIncidents.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
-        const lostTime = actualIncidents.filter(r => r.sev === 'Fatal').length;
-        if (totalManHours > 0) {
-            document.getElementById('trirTile').innerText = ((recordable * 200000) / totalManHours).toFixed(2);
-            document.getElementById('ltifrTile').innerText = ((lostTime * 1000000) / totalManHours).toFixed(2);
-        } else {
-            document.getElementById('trirTile').innerText = '–';
-            document.getElementById('ltifrTile').innerText = '–';
-        }
     }
 
     function renderChart() {
@@ -1542,9 +1520,14 @@
         const monthsBack = rangeSel ? (parseInt(rangeSel.value) || 6) : 6;
         const sevKeys = ['Low', 'Medium', 'High', 'Fatal'];
         const sevColors = { Low: '#2ecc71', Medium: '#f5a524', High: '#ff6b6b', Fatal: '#8b0000' };
+        // Same palette as reportTypeBadge() elsewhere in the app, so a report's
+        // color means the same thing on the dashboard as it does in the register.
+        const typeKeys = ['Incident', 'Near Miss', 'Unsafe Condition'];
+        const typeColors = { 'Incident': '#0b7dbf', 'Near Miss': '#9a6300', 'Unsafe Condition': '#7a2fb0' };
         const now = new Date();
         const labels = [];
         const sevData = { Low: [], Medium: [], High: [], Fatal: [] };
+        const typeData = { 'Incident': [], 'Near Miss': [], 'Unsafe Condition': [] };
         const totals = [];
 
         for (let i = monthsBack - 1; i >= 0; i--) {
@@ -1555,6 +1538,11 @@
                 return !isNaN(rd) && rd.getFullYear() === d.getFullYear() && rd.getMonth() === d.getMonth();
             });
             sevKeys.forEach(sev => sevData[sev].push(monthReports.filter(r => r.sev === sev).length));
+            // Older records without a "type" field are treated as Incident, matching
+            // the same backward-compatibility rule used in refreshStats().
+            typeData['Incident'].push(monthReports.filter(r => !r.type || r.type === 'Incident').length);
+            typeData['Near Miss'].push(monthReports.filter(r => r.type === 'Near Miss').length);
+            typeData['Unsafe Condition'].push(monthReports.filter(r => r.type === 'Unsafe Condition').length);
             totals.push(monthReports.length);
         }
 
@@ -1584,11 +1572,11 @@
                         type: 'bar', label: sev, data: sevData[sev], backgroundColor: sevColors[sev],
                         stack: 'severity', borderRadius: 4, maxBarThickness: 34
                     })),
-                    {
-                        type: 'line', label: 'Total', data: totals, borderColor: '#0b7dbf',
-                        backgroundColor: 'rgba(11,125,191,0.12)', tension: 0.35, fill: true,
-                        pointRadius: 4, pointBackgroundColor: '#0b7dbf', borderWidth: 2
-                    }
+                    ...typeKeys.map(t => ({
+                        type: 'line', label: t, data: typeData[t], borderColor: typeColors[t],
+                        backgroundColor: typeColors[t], tension: 0.35, fill: false,
+                        pointRadius: 3, pointBackgroundColor: typeColors[t], borderWidth: 2
+                    }))
                 ]
             },
             options: {
@@ -1717,7 +1705,6 @@
         if (t === 'users') renderUsers();
         if (t === 'capa') { populateFactorySelects(); renderCAPA(); }
         if (t === 'activity') renderActivityLog();
-        if (t === 'settings') renderFactorySettingsForm();
     }
     function renderAdminSection() { populateFactorySelects(); renderExtinguisherList(); }
 
@@ -1792,24 +1779,6 @@
       if (!confirm('Delete this CAPA record?')) return;
       LocalDB.set('capa', LocalDB.get('capa', []).filter(x => x.id !== id));
       renderCAPA(); updateBell();
-    }
-
-    // --- Factory Settings (man-hours for TRIR/LTIFR) ---
-    function renderFactorySettingsForm() {
-      const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
-      const settings = LocalDB.get('factorySettings', {});
-      document.getElementById('manHoursInputs').innerHTML = factories.map(f => `
-        <div><label class="small">${f} — Monthly Man-Hours</label><input type="number" min="0" id="mh_${f}" value="${settings[f] || ''}"></div>
-      `).join('');
-    }
-    function saveFactorySettings() {
-      const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
-      const settings = {};
-      factories.forEach(f => { const el = document.getElementById('mh_' + f); if (el) settings[f] = Number(el.value) || 0; });
-      LocalDB.set('factorySettings', settings);
-      logActivity('Man-hours updated', 'Factory settings saved');
-      alert('Saved. TRIR / LTIFR on the Home tab will use these figures.');
-      refreshStats();
     }
 
     // A tiny 1x1 red PNG, used purely to test whether Drive uploads succeed —
@@ -2618,6 +2587,36 @@
     function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
+    // Drive links saved by uploadImageToDrive() (Code.gs) look like
+    // "https://drive.google.com/uc?export=view&id=FILE_ID". That raw "uc"
+    // endpoint is not reliable for hotlinking: Google increasingly serves it
+    // as a forced download rather than inline content, which is exactly why
+    // gallery photos were showing as blank boxes and policy PDFs were
+    // downloading instead of previewing. These helpers pull the file ID out
+    // of whatever Drive URL is stored and point it at the endpoints Google
+    // actually built for embedding: "thumbnail" for <img> tags and
+    // "/preview" for iframes. Non-Drive URLs (e.g. local base64 fallback
+    // data) are returned unchanged.
+    function driveFileId(url) {
+      if (!url || typeof url !== 'string') return null;
+      const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      return m ? m[1] : null;
+    }
+    function driveImageSrc(url) {
+      const id = driveFileId(url);
+      return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w1000` : url;
+    }
+    // Backup source for the <img> onerror handler below, in case the
+    // thumbnail endpoint ever hiccups for a freshly-uploaded file.
+    function driveImageFallbackSrc(url) {
+      const id = driveFileId(url);
+      return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+    }
+    function drivePreviewSrc(url) {
+      const id = driveFileId(url);
+      return id ? `https://drive.google.com/file/d/${id}/preview` : url;
+    }
+
     window.onload = async () => {
         await loadFromCloud(); // pull the shared spreadsheet before we render anything
         checkAuth();
@@ -2651,8 +2650,8 @@
         '<p style="color:grey;grid-column:1/-1;text-align:center;">No policies uploaded yet.</p>';
     }
     
-    function openPolicyFile(data) { const win = window.open();
-    if(win) win.document.write(`<iframe src="${data}" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe>`); }
+    function openPolicyFile(data) { const src = drivePreviewSrc(data); const win = window.open();
+    if(win) win.document.write(`<iframe src="${src}" frameborder="0" style="border:0;width:100%;height:100%;" allowfullscreen></iframe>`); }
     
     window.uploadPolicy = async function(e){ 
         e.preventDefault();
@@ -2691,7 +2690,10 @@
       const grid = document.getElementById('galleryGrid');
       const isAdmin = currentUser && currentUser.role==='admin';
       if(!grid) return;
-      grid.innerHTML = photos.map((p, i)=>`<div class="gallery-item"><img src="${p.url||p.data}" loading="lazy" onclick="openFullscreen(${i})">${isAdmin?`<div class="gal-del" onclick="event.stopPropagation();delPhoto(${p.id})">X</div>`:''}</div>`).join('') ||
+      grid.innerHTML = photos.map((p, i)=>{
+        const raw = p.url || p.data;
+        return `<div class="gallery-item"><img src="${driveImageSrc(raw)}" data-fallback="${driveImageFallbackSrc(raw)}" onerror="if(this.dataset.fallback && this.src!==this.dataset.fallback){this.src=this.dataset.fallback}" loading="lazy" onclick="openFullscreen(${i})">${isAdmin?`<div class="gal-del" onclick="event.stopPropagation();delPhoto(${p.id})">X</div>`:''}</div>`;
+      }).join('') ||
         '<p style="color:grey;grid-column:1/-1;text-align:center;">No photos uploaded yet.</p>';
     }
 
@@ -2701,11 +2703,11 @@
       if (el) el.innerText = photos.length ? `${currentPhotoIndex + 1} / ${photos.length}` : '';
     }
     function openFullscreen(index){ currentPhotoIndex = index; const photos = LocalDB.get('gallery', []);
-      document.getElementById('fsImg').src = (photos[index] || {}).url || (photos[index] || {}).data || ''; document.getElementById('fullscreenModal').style.display='flex';
+      document.getElementById('fsImg').src = driveImageSrc((photos[index] || {}).url || (photos[index] || {}).data || ''); document.getElementById('fullscreenModal').style.display='flex';
       updateFsCounter();
     }
     function moveGallery(step){ const photos = LocalDB.get('gallery', []); if(!photos.length) return;
-    currentPhotoIndex = (currentPhotoIndex + step + photos.length) % photos.length; document.getElementById('fsImg').src = (photos[currentPhotoIndex].url || photos[currentPhotoIndex].data);
+    currentPhotoIndex = (currentPhotoIndex + step + photos.length) % photos.length; document.getElementById('fsImg').src = driveImageSrc(photos[currentPhotoIndex].url || photos[currentPhotoIndex].data);
     updateFsCounter();
     }
     document.addEventListener('keydown', (e) => {
@@ -2789,16 +2791,7 @@
       if (lower.includes('how are we doing') || lower.includes('overview') || lower.includes('summary') || lower.includes('safety stat')) {
         const reports = LocalDB.get('reports', []);
         const safeDays = document.getElementById('safeDays') ? document.getElementById('safeDays').innerText : '–';
-        const trir = document.getElementById('trirTile') ? document.getElementById('trirTile').innerText : '–';
-        return `Currently: ${safeDays} safe days, ${reports.length} total reports logged, TRIR ${trir}. Ask "overdue items" for a full compliance check.`;
-      }
-
-      // TRIR / LTIFR explanation with live numbers
-      if (lower.includes('trir') || lower.includes('ltifr') || lower.includes('injury rate') || lower.includes('frequency rate')) {
-        const trir = document.getElementById('trirTile') ? document.getElementById('trirTile').innerText : '–';
-        const ltifr = document.getElementById('ltifrTile') ? document.getElementById('ltifrTile').innerText : '–';
-        if (trir === '–') return `TRIR/LTIFR aren't calculated yet — an Admin needs to enter monthly man-hours per factory in Admin → Settings first.`;
-        return `Current TRIR is ${trir} (recordable incidents per 200,000 man-hours) and LTIFR is ${ltifr} (lost-time injuries per 1,000,000 man-hours), based on man-hours entered in Settings.`;
+        return `Currently: ${safeDays} safe days, ${reports.length} total reports logged. Ask "overdue items" for a full compliance check.`;
       }
 
       // Near miss / unsafe condition
@@ -2977,11 +2970,9 @@
     window.deleteCAPA = deleteCAPA;
     window.renderCAPA = renderCAPA;
     window.renderActivityLog = renderActivityLog;
-    window.saveFactorySettings = saveFactorySettings;
     window.sendTestAlertEmail = sendTestAlertEmail;
     window.testCloudConnection = testCloudConnection;
     window.testDriveUpload = testDriveUpload;
-    window.renderFactorySettingsForm = renderFactorySettingsForm;
     window.exportTableToExcel = exportTableToExcel;
     window.showExtinguisherQR = showExtinguisherQR;
     window.toggleTheme = toggleTheme;
