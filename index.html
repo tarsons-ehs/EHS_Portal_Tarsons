@@ -383,7 +383,7 @@
         <li><a href="#" data-nav="legal" onclick="requireAuthAndGo('legal')">⚖️ Legal</a></li>
         <li><a href="#" data-nav="gallery" onclick="navTo('gallery')">🖼️ EHS Gallery</a></li>
         <li><a href="#" data-nav="policies" onclick="navTo('policies')">📄 Policies</a></li>
-        <li><a href="#" data-nav="contact" onclick="navTo('contact')">📞 Contact</a></li>
+        <li><a href="#" data-nav="contact" onclick="navTo('contact')">☎ Contact</a></li>
         <li><a href="#" data-nav="adminSection" onclick="requireAdminAndGo('adminSection')" class="admin-only">🛠️ Admin</a></li>
       </ul>
     </nav>
@@ -421,11 +421,21 @@
             
             <div id="expiryAlertSection"></div>
             
-            <div style="margin-top:20px;">
-              <h3>Incident Trend</h3>
-              <div style="height:280px; position:relative;">
+            <div style="margin-top:24px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <h3 style="margin:0">📈 Incident Trend</h3>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <span class="small" id="trendDelta" style="font-weight:700"></span>
+                  <select id="trendRange" onchange="renderChart()" style="width:130px;padding:6px 10px;font-size:12.5px">
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                  </select>
+                </div>
+              </div>
+              <div style="height:300px; position:relative; margin-top:10px;">
                 <canvas id="incidentChart"></canvas>
               </div>
+              <div class="tiles" style="margin-top:12px" id="trendLegendTiles"></div>
             </div>
         </div>
       </div>
@@ -599,6 +609,12 @@
                 <p class="small" style="color:var(--muted)">Enter each factory's approximate monthly man-hours so the home dashboard can calculate injury frequency rates.</p>
                 <div id="manHoursInputs" class="two-cols"></div>
                 <button class="primary btn-sm" style="margin-top:8px" onclick="saveFactorySettings()">Save</button>
+            </div>
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
+                <h4>Email Alerts</h4>
+                <p class="small" style="color:var(--muted)">Daily overdue alerts are sent from the Apps Script backend, not from this page directly. Use this to confirm mail is actually configured and working.</p>
+                <button class="ghost-dark btn-sm" id="testEmailBtn" onclick="sendTestAlertEmail()">📧 Send Test Alert Email</button>
+                <span id="testEmailStatus" class="small" style="margin-left:10px;color:var(--muted)"></span>
             </div>
         </div>
         
@@ -876,14 +892,14 @@
         <h1>Emergency Contacts:</h1>
         <table style="width:100%">
           <tr><th>Name</th><th>Number</th></tr>
-          <tr><td>West Bengal Police</td><td><a href="tel:100">📞 100</a></td></tr>
-          <tr><td>Fire Brigade</td><td><a href="tel:101">📞 101</a></td></tr>
-          <tr><td>Ambulance</td><td><a href="tel:102">📞 102</a></td></tr>
-          <tr><td>Medical Helpline</td><td><a href="tel:+919830079999">📞 +91 9830079999</a></td></tr>
-          <tr><td>Child Helpline</td><td><a href="tel:1098">📞 1098</a></td></tr>
-          <tr><td>Women Helpline</td><td><a href="tel:1091">📞 1091</a></td></tr>
-          <tr><td>Tarsons HSE Manager</td><td><a href="tel:+917980326735">📞 +91 7980326735</a></td></tr>
-          <tr><td>TARSONS PRODUCTS LIMITED (H.O)</td><td><a href="tel:+9103335220300">📞 +91 033 3522 0300</a></td></tr>
+          <tr><td>West Bengal Police</td><td><a href="tel:100">☎ 100</a></td></tr>
+          <tr><td>Fire Brigade</td><td><a href="tel:101">☎ 101</a></td></tr>
+          <tr><td>Ambulance</td><td><a href="tel:102">☎ 102</a></td></tr>
+          <tr><td>Medical Helpline</td><td><a href="tel:+919830079999">☎ +91 9830079999</a></td></tr>
+          <tr><td>Child Helpline</td><td><a href="tel:1098">☎ 1098</a></td></tr>
+          <tr><td>Women Helpline</td><td><a href="tel:1091">☎ 1091</a></td></tr>
+          <tr><td>Tarsons HSE Manager</td><td><a href="tel:+917980326735">☎ +91 7980326735</a></td></tr>
+          <tr><td>TARSONS PRODUCTS LIMITED (H.O)</td><td><a href="tel:+9103335220300">☎ +91 033 3522 0300</a></td></tr>
         </table>
         <h1>Factory ERT Members:</h1>
         <table style="width:100%">
@@ -1478,29 +1494,82 @@
         if (!ctx) return;
         if (myChart) myChart.destroy();
 
-        // Build the last 6 months' real incident counts
         const reports = LocalDB.get('reports', []);
+        const rangeSel = document.getElementById('trendRange');
+        const monthsBack = rangeSel ? (parseInt(rangeSel.value) || 6) : 6;
+        const sevKeys = ['Low', 'Medium', 'High', 'Fatal'];
+        const sevColors = { Low: '#2ecc71', Medium: '#f5a524', High: '#ff6b6b', Fatal: '#8b0000' };
         const now = new Date();
         const labels = [];
-        const counts = [];
-        for (let i = 5; i >= 0; i--) {
+        const sevData = { Low: [], Medium: [], High: [], Fatal: [] };
+        const totals = [];
+
+        for (let i = monthsBack - 1; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            labels.push(d.toLocaleString('default', { month: 'short' }));
-            const count = reports.filter(r => {
+            labels.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+            const monthReports = reports.filter(r => {
                 const rd = new Date(r.date);
                 return !isNaN(rd) && rd.getFullYear() === d.getFullYear() && rd.getMonth() === d.getMonth();
-            }).length;
-            counts.push(count);
+            });
+            sevKeys.forEach(sev => sevData[sev].push(monthReports.filter(r => r.sev === sev).length));
+            totals.push(monthReports.length);
         }
 
+        // This-month-vs-last-month callout
+        const deltaEl = document.getElementById('trendDelta');
+        if (deltaEl) {
+            const thisMonthCount = totals[totals.length - 1] || 0;
+            const lastMonthCount = totals[totals.length - 2] || 0;
+            if (thisMonthCount === 0 && lastMonthCount === 0) {
+                deltaEl.innerText = '';
+            } else {
+                const diff = thisMonthCount - lastMonthCount;
+                const arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '—');
+                deltaEl.style.color = diff > 0 ? 'var(--danger)' : (diff < 0 ? 'var(--accent)' : 'var(--muted)');
+                deltaEl.innerText = `${arrow} ${Math.abs(diff)} vs last month`;
+            }
+        }
+
+        const textColor = getComputedStyle(document.body).getPropertyValue('--text-dark').trim() || '#0b2027';
+        const gridColor = document.body.classList.contains('dark-theme') ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.05)';
+
         myChart = new Chart(ctx, {
-            type: 'line',
             data: {
                 labels,
-                datasets: [{ label: 'Incidents', data: counts, borderColor: '#12b76a', backgroundColor: 'rgba(18,183,106,0.15)', fill: true, tension: 0.3 }]
+                datasets: [
+                    ...sevKeys.map(sev => ({
+                        type: 'bar', label: sev, data: sevData[sev], backgroundColor: sevColors[sev],
+                        stack: 'severity', borderRadius: 4, maxBarThickness: 34
+                    })),
+                    {
+                        type: 'line', label: 'Total', data: totals, borderColor: '#0b7dbf',
+                        backgroundColor: 'rgba(11,125,191,0.12)', tension: 0.35, fill: true,
+                        pointRadius: 4, pointBackgroundColor: '#0b7dbf', borderWidth: 2
+                    }
+                ]
             },
-            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            options: {
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 11, usePointStyle: true, color: textColor } },
+                    tooltip: { backgroundColor: 'rgba(10,26,47,.94)', padding: 10, cornerRadius: 8, titleFont: { weight: 'bold' } }
+                },
+                scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: { color: textColor } },
+                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0, color: textColor }, grid: { color: gridColor } }
+                }
+            }
         });
+
+        const legendBox = document.getElementById('trendLegendTiles');
+        if (legendBox) {
+            const allTime = { Low: 0, Medium: 0, High: 0, Fatal: 0 };
+            reports.forEach(r => { if (allTime[r.sev] !== undefined) allTime[r.sev]++; });
+            legendBox.innerHTML = sevKeys.map(sev => `
+                <div class="tile" style="border-left:4px solid ${sevColors[sev]}"><div class="small">${sev} (All-time)</div><div class="big" style="font-size:20px">${allTime[sev]}</div></div>
+            `).join('');
+        }
     }
 
     function populateFactorySelects() {
@@ -1700,7 +1769,28 @@
       refreshStats();
     }
 
-    // --- Excel export (any table id) ---
+    async function sendTestAlertEmail() {
+      const btn = document.getElementById('testEmailBtn');
+      const status = document.getElementById('testEmailStatus');
+      if (!CLOUD_SYNC_ENABLED) { status.innerText = 'Cloud sync isn\'t configured (GAS_URL not set) — email is sent from the Apps Script backend, so this needs cloud sync set up first.'; status.style.color = 'var(--danger)'; return; }
+      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Sending...';
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'testEmail' })
+        });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'ok') {
+          status.style.color = 'var(--accent)'; status.innerText = 'Sent! Check your inbox (and spam folder).';
+        } else {
+          status.style.color = 'var(--danger)'; status.innerText = 'Failed: ' + ((json && json.message) || 'unknown error — check the Apps Script deployment.');
+        }
+      } catch (err) {
+        status.style.color = 'var(--danger)'; status.innerText = 'Failed to reach the Apps Script backend.';
+      }
+      btn.disabled = false;
+    }
     function exportTableToExcel(tableId, filename) {
       const table = document.getElementById(tableId);
       if (!table || typeof XLSX === 'undefined') { alert('Export library not loaded — check your internet connection.'); return; }
@@ -1722,6 +1812,7 @@
       const isDark = document.body.classList.toggle('dark-theme');
       localStorage.setItem('hse_theme', isDark ? 'dark' : 'light');
       document.getElementById('themeToggleBtn').innerText = isDark ? '☀️' : '🌙';
+      if (myChart) renderChart();
     }
     (function initTheme(){
       if (localStorage.getItem('hse_theme') === 'dark') {
@@ -2279,6 +2370,27 @@
         }
     }
 
+    // Uploads a base64 file to Google Drive via Apps Script and returns a public view URL.
+    // Returns null if cloud sync isn't configured or the upload fails — callers should
+    // fall back to storing the base64 locally in that case (with its size limits).
+    async function uploadImageToCloud(base64, filename, mimeType) {
+      if (!CLOUD_SYNC_ENABLED) return null;
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'uploadImage', base64, filename, mimeType })
+        });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'ok' && json.url) return json.url;
+        console.error('Drive upload failed:', json && json.message);
+        return null;
+      } catch (err) {
+        console.error('Drive upload request failed:', err);
+        return null;
+      }
+    }
+
     function readFileAsDataURL(file){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
     }
     function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2324,17 +2436,27 @@
         e.preventDefault();
         const file = document.getElementById('polFile').files[0]; 
         if(!file) return alert('Choose file'); 
+        const title = document.getElementById('polTitle').value;
+        const saveBtn = e.target.querySelector('button[type=submit]');
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Uploading...'; }
         try { 
             const base64 = await readFileAsDataURL(file);
-            if(base64.length > 50000) {
-                 alert("Warning: This PDF/Image is large and may not save to Google Sheets properly.");
+            let stored = { id: Date.now(), title };
+            const driveUrl = await uploadImageToCloud(base64, file.name, file.type);
+            if (driveUrl) {
+                stored.data = driveUrl; // small URL — syncs to the sheet with no size issues
+            } else {
+                if (base64.length > 50000) {
+                    alert('Cloud storage isn\'t available right now, so this is being saved to this browser only (not shared with other users) because it\'s too large for the spreadsheet. Set up cloud sync to share large files.');
+                }
+                stored.data = base64;
             }
-            const polObj = { id: Date.now(), title: document.getElementById('polTitle').value, data: base64 };
             const pols = LocalDB.get('policies'); 
-            pols.push(polObj); 
+            pols.push(stored); 
             LocalDB.set('policies', pols);
-
-        } catch(err){ console.error(err); } 
+            logActivity('Policy uploaded', title || file.name || '');
+        } catch(err){ console.error(err); alert('Upload failed — check your connection and try again.'); } 
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = 'Upload'; }
         e.target.reset(); 
         renderPolicies();
     };
@@ -2375,20 +2497,28 @@
     window.uploadPhoto = async function(){ 
         const file = document.getElementById('galUpload').files[0];
         if(!file) return alert('Select file'); 
+        const btn = document.querySelector('#gallery button[onclick="uploadPhoto()"]');
+        if (btn) { btn.disabled = true; btn.innerText = 'Uploading...'; }
         try { 
             const base64 = await readFileAsDataURL(file);
-            if(base64.length > 50000) {
-                 alert("Warning: This image is large and may not save to Google Sheets properly. Try a smaller image.");
+            const photoObj = { id: Date.now() };
+            const driveUrl = await uploadImageToCloud(base64, file.name, file.type);
+            if (driveUrl) {
+                photoObj.url = driveUrl; // small URL — syncs to the sheet with no size issues
+            } else {
+                if (base64.length > 50000) {
+                    alert('Cloud storage isn\'t available right now, so this photo is being saved to this browser only (not shared with other users) because it\'s too large for the spreadsheet. Set up cloud sync to share large photos.');
+                }
+                photoObj.url = base64;
             }
-
-            const photoObj = { id: Date.now(), url: base64 };
             const photos = LocalDB.get('gallery'); 
             photos.push(photoObj); 
             LocalDB.set('gallery', photos); 
             logActivity('Gallery photo uploaded', file.name || '');
             
-        } catch(err) { console.error(err);
+        } catch(err) { console.error(err); alert('Upload failed — check your connection and try again.');
         } 
+        if (btn) { btn.disabled = false; btn.innerText = 'Upload'; }
         renderGallery(); 
     };
     
@@ -2499,12 +2629,8 @@
     window.exportJSON = exportJSON;
     window.toggleMobileMenu = toggleMobileMenu;
     window.openPolicyFile = openPolicyFile;
-    window.uploadPolicy = uploadPolicy;
-    window.delPolicy = delPolicy;
     window.openFullscreen = openFullscreen;
     window.moveGallery = moveGallery;
-    window.uploadPhoto = uploadPhoto;
-    window.delPhoto = delPhoto;
     window.toggleAI = toggleAI;
     window.sendAIMessage = sendAIMessage;
     window.appendMessage = appendMessage;
@@ -2514,6 +2640,7 @@
     window.renderCAPA = renderCAPA;
     window.renderActivityLog = renderActivityLog;
     window.saveFactorySettings = saveFactorySettings;
+    window.sendTestAlertEmail = sendTestAlertEmail;
     window.renderFactorySettingsForm = renderFactorySettingsForm;
     window.exportTableToExcel = exportTableToExcel;
     window.showExtinguisherQR = showExtinguisherQR;
