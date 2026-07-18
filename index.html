@@ -415,6 +415,7 @@
               <div class="tile"><div class="small">Open PTWs</div><div class="big" id="openPTWs">0</div></div>
               <div class="tile" title="Total Recordable Incident Rate (per 200,000 man-hours)"><div class="small">TRIR</div><div class="big" id="trirTile">–</div></div>
               <div class="tile" title="Lost Time Injury Frequency Rate (per 1,000,000 man-hours)"><div class="small">LTIFR</div><div class="big" id="ltifrTile">–</div></div>
+              <div class="tile" title="Near Miss + Unsafe Condition reports logged"><div class="small">Near Miss / Unsafe</div><div class="big" id="nearMissTile">0</div></div>
             </div>
             
             <div id="factoriesContainer" class="factory-grid"></div>
@@ -604,6 +605,13 @@
         </div>
 
         <div id="settingsContainer" style="display:none">
+            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--danger);">
+                <h4>Cloud Connection Diagnostics</h4>
+                <p class="small" style="color:var(--muted)">Gallery, Policy, TRIR/LTIFR, and email alerts all depend on the connection to your Google Sheet backend. Test it here if anything isn't showing up for other users.</p>
+                <button class="ghost-dark btn-sm" id="testCloudBtn" onclick="testCloudConnection()">🔌 Test Cloud Connection</button>
+                <button class="ghost-dark btn-sm" id="testDriveBtn" onclick="testDriveUpload()">🖼️ Test Drive Upload</button>
+                <span id="testCloudStatus" class="small" style="margin-left:10px;color:var(--muted)"></span>
+            </div>
             <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
                 <h4>Monthly Man-Hours (for TRIR / LTIFR)</h4>
                 <p class="small" style="color:var(--muted)">Enter each factory's approximate monthly man-hours so the home dashboard can calculate injury frequency rates.</p>
@@ -693,17 +701,25 @@
         <h2>Incident Register</h2>
 
         <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid var(--accent);">
-          <h4>Report / Add Incident</h4>
+          <h4>Report / Add Incident, Near Miss, or Unsafe Condition</h4>
           <form id="incForm" onsubmit="submitIncident(event)">
             <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Location" required></div>
-             <div class="two-cols" style="margin-top:10px"><input id="rDate" type="datetime-local" required><select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select></div>
+             <div class="two-cols" style="margin-top:10px">
+               <select id="rType" required>
+                 <option value="Incident">Incident</option>
+                 <option value="Near Miss">Near Miss</option>
+                 <option value="Unsafe Condition">Unsafe Condition</option>
+               </select>
+               <select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select>
+             </div>
+             <input id="rDate" type="datetime-local" required style="margin-top:10px">
             <textarea id="rDesc" placeholder="Description..." style="margin-top:10px" required></textarea>
-            <button type="submit" class="primary" style="margin-top:10px">Submit Incident</button>
+            <button type="submit" class="primary" style="margin-top:10px">Submit</button>
           </form>
         </div>
 
         <div style="overflow-x:auto; margin-top:10px">
-          <table id="dashTable"><thead><tr><th>Date</th><th>Reporter</th><th>Severity</th><th>Description</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
+          <table id="dashTable"><thead><tr><th>Date</th><th>Type</th><th>Reporter</th><th>Location</th><th>Severity</th><th>Description</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
         <button class="primary" onclick="exportJSON()" style="margin-top:15px">Export Data</button>
       </div>
@@ -889,25 +905,37 @@
 
     <section id="contact" style="display:none" class="container">
       <div class="card">
-        <h1>Emergency Contacts:</h1>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:18px;border-left:4px solid var(--accent);">
+          <h4>Add Contact</h4>
+          <form onsubmit="addContact(event)">
+            <div class="two-cols">
+              <input id="contName" placeholder="Name" required>
+              <input id="contNumber" placeholder="Phone Number (e.g. +919876543210)" required>
+            </div>
+            <div class="two-cols" style="margin-top:6px">
+              <select id="contCategory" required>
+                <option value="">Category</option>
+                <option value="Emergency">Emergency Contact</option>
+                <option value="ERT">Factory ERT Member</option>
+              </select>
+              <select id="contFactory">
+                <option value="">Factory (ERT only)</option>
+              </select>
+            </div>
+            <button type="submit" class="primary" style="margin-top:8px">Add Contact</button>
+          </form>
+        </div>
+
+        <h1>☎ Emergency Contacts</h1>
         <table style="width:100%">
-          <tr><th>Name</th><th>Number</th></tr>
-          <tr><td>West Bengal Police</td><td><a href="tel:100">☎ 100</a></td></tr>
-          <tr><td>Fire Brigade</td><td><a href="tel:101">☎ 101</a></td></tr>
-          <tr><td>Ambulance</td><td><a href="tel:102">☎ 102</a></td></tr>
-          <tr><td>Medical Helpline</td><td><a href="tel:+919830079999">☎ +91 9830079999</a></td></tr>
-          <tr><td>Child Helpline</td><td><a href="tel:1098">☎ 1098</a></td></tr>
-          <tr><td>Women Helpline</td><td><a href="tel:1091">☎ 1091</a></td></tr>
-          <tr><td>Tarsons HSE Manager</td><td><a href="tel:+917980326735">☎ +91 7980326735</a></td></tr>
-          <tr><td>TARSONS PRODUCTS LIMITED (H.O)</td><td><a href="tel:+9103335220300">☎ +91 033 3522 0300</a></td></tr>
+          <thead><tr><th>Name</th><th>Number</th><th class="admin-only">Action</th></tr></thead>
+          <tbody id="emergencyContactsBody"></tbody>
         </table>
-        <h1>Factory ERT Members:</h1>
+
+        <h1 style="margin-top:20px">Factory ERT Members</h1>
         <table style="width:100%">
-          <tr><th>Name</th><th>Factory</th><th>Number</th></tr>
-          <tr><td>Nasiruddin Sk</td><td>JANGALPUR</td><td><a href="tel:+919804081106">☎ 9804081106</a></td></tr>
-          <tr><td>Basiruddin Mallik</td><td>DHULAGARH</td><td><a href="tel:+919831604820">☎ 9831604820</a></td></tr>
-          <tr><td>Ali Hapej</td><td>PANCHLA</td><td><a href="tel:+919876543210">☎ 9876543210</a></td></tr>
-          <tr><td>SK Rafikul</td><td>AMTA</td><td><a href="tel:+919876543211">☎ 9876543211</a></td></tr>
+          <thead><tr><th>Name</th><th>Factory</th><th>Number</th><th class="admin-only">Action</th></tr></thead>
+          <tbody id="ertContactsBody"></tbody>
         </table>
       </div>
     </section>
@@ -1055,7 +1083,7 @@
     <span style="cursor:pointer" onclick="toggleAI()">×</span>
   </div>
   <div id="aiMessages">
-    <div class="ai-msg ai-bot">Welcome to the Tarsons HSE Portal. I can help with PPE info, emergency contacts, or reporting procedures.</div>
+    <div class="ai-msg ai-bot">Hi! I'm the HSE Portal assistant. Ask me things like "what's overdue", "how many open PTWs", "TRIR", or "PPE stock" — I'll check the live data and answer.</div>
     <div id="aiTyping" class="typing">Bot is typing...</div>
   </div>
   <div id="aiInputArea">
@@ -1271,6 +1299,8 @@
         }
     }
 
+    function safeCall(fn) { try { fn(); } catch (err) { console.error('Render error:', err); } }
+
     function navTo(id) {
         document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
         const target = document.getElementById(id);
@@ -1283,18 +1313,22 @@
             if (isActive) a.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         });
         
-        if (id === 'home') { renderNotices(); renderFactories(); renderChart(); refreshStats(); renderExpiryAlerts(); }
-        if (id === 'adminSection') { populateFactorySelects(); renderAdminSection(); renderAudits(); }
-        if (id === 'dashboard') renderDashboard();
-        if (id === 'ppe') { renderPPE(); renderPPELogs(); }
-        if (id === 'legal') renderLegalRegister();
-        if (id === 'training') { populateFactorySelects(); renderModules(); renderRecords(); renderVisitors(); }
-        if (id === 'ptw') { populateFactorySelects(); renderPTWList(); }
-        if (id === 'gallery') renderGallery();
-        if (id === 'policies') renderPolicies();
-        if (id === 'hira') { populateFactorySelects(); renderHIRA(); }
-        if (id === 'waste') { populateFactorySelects(); renderWaste(); }
-        updateBell();
+        if (id === 'home') {
+            safeCall(renderNotices); safeCall(renderFactories); safeCall(refreshStats);
+            safeCall(renderChart); safeCall(renderExpiryAlerts);
+        }
+        if (id === 'adminSection') { safeCall(populateFactorySelects); safeCall(renderAdminSection); safeCall(renderAudits); }
+        if (id === 'dashboard') safeCall(renderDashboard);
+        if (id === 'ppe') { safeCall(renderPPE); safeCall(renderPPELogs); }
+        if (id === 'legal') safeCall(renderLegalRegister);
+        if (id === 'training') { safeCall(populateFactorySelects); safeCall(renderModules); safeCall(renderRecords); safeCall(renderVisitors); }
+        if (id === 'ptw') { safeCall(populateFactorySelects); safeCall(renderPTWList); }
+        if (id === 'gallery') safeCall(renderGallery);
+        if (id === 'policies') safeCall(renderPolicies);
+        if (id === 'hira') { safeCall(populateFactorySelects); safeCall(renderHIRA); }
+        if (id === 'waste') { safeCall(populateFactorySelects); safeCall(renderWaste); }
+        if (id === 'contact') { safeCall(populateFactorySelects); safeCall(renderContacts); }
+        safeCall(updateBell);
     }
 
     function requireAuthAndGo(id) { if (!currentUser) showLogin(); else navTo(id); }
@@ -1457,11 +1491,20 @@
         document.getElementById('totalReports').innerText = reports.length;
         document.getElementById('openPTWs').innerText = ptws.filter(p => p.status === 'Pending').length;
 
-        // Safe Days = days since the most recent incident
+        // Only true "Incident" reports count toward safety metrics — Near Miss and
+        // Unsafe Condition are proactive/preventive reports, not actual injuries.
+        // Older records without a type are treated as Incident for backward compatibility.
+        const actualIncidents = reports.filter(r => !r.type || r.type === 'Incident');
+        const nearMissCount = reports.filter(r => r.type === 'Near Miss').length;
+        const unsafeCount = reports.filter(r => r.type === 'Unsafe Condition').length;
+        const nmTile = document.getElementById('nearMissTile');
+        if (nmTile) nmTile.innerText = nearMissCount + unsafeCount;
+
+        // Safe Days = days since the most recent actual incident (near misses don't reset this)
         let trackingStart = LocalDB.get('trackingStart', null);
         if (!trackingStart) { trackingStart = new Date().toISOString(); LocalDB.set('trackingStart', trackingStart); }
         let lastIncidentDate = null;
-        reports.forEach(r => {
+        actualIncidents.forEach(r => {
             const d = new Date(r.date);
             if (!isNaN(d) && (!lastIncidentDate || d > lastIncidentDate)) lastIncidentDate = d;
         });
@@ -1469,17 +1512,17 @@
         const safeDays = Math.max(0, Math.floor((new Date() - baseline) / (1000*60*60*24)));
         document.getElementById('safeDays').innerText = safeDays;
 
-        // Accident Ratio = share of logged incidents rated High or Fatal severity
-        const severe = reports.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
-        const ratio = reports.length > 0 ? ((severe / reports.length) * 100).toFixed(1) : '0';
+        // Accident Ratio = share of actual incidents rated High or Fatal severity
+        const severe = actualIncidents.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
+        const ratio = actualIncidents.length > 0 ? ((severe / actualIncidents.length) * 100).toFixed(1) : '0';
         document.getElementById('accRatio').innerText = ratio + '%';
 
         // TRIR / LTIFR — approximate, based on incident severity vs configured man-hours.
         // Recordable = High or Fatal severity; Lost-time = Fatal severity (closest proxy available in this data model).
         const settings = LocalDB.get('factorySettings', {});
         const totalManHours = Object.values(settings).reduce((sum, v) => sum + (Number(v) || 0), 0);
-        const recordable = reports.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
-        const lostTime = reports.filter(r => r.sev === 'Fatal').length;
+        const recordable = actualIncidents.filter(r => r.sev === 'High' || r.sev === 'Fatal').length;
+        const lostTime = actualIncidents.filter(r => r.sev === 'Fatal').length;
         if (totalManHours > 0) {
             document.getElementById('trirTile').innerText = ((recordable * 200000) / totalManHours).toFixed(2);
             document.getElementById('ltifrTile').innerText = ((lostTime * 1000000) / totalManHours).toFixed(2);
@@ -1577,7 +1620,7 @@
         const selectIds = [
             'factorySelect', 'extFactory', 'extFilter', 'auditFactory', 
             'visFactory', 'ptwFactory', 'ptwFactoryFilter', 'legFactorySelect', 'issueLocation',
-            'hiraFactory', 'wasteFactory', 'capaFactory'
+            'hiraFactory', 'wasteFactory', 'capaFactory', 'contFactory'
         ];
 
         selectIds.forEach(id => {
@@ -1769,6 +1812,59 @@
       refreshStats();
     }
 
+    // A tiny 1x1 red PNG, used purely to test whether Drive uploads succeed —
+    // isolates Drive/authorization problems from general cloud sync problems.
+    const TEST_PIXEL_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    async function testDriveUpload() {
+      const status = document.getElementById('testCloudStatus');
+      const btn = document.getElementById('testDriveBtn');
+      if (!CLOUD_SYNC_ENABLED) { status.style.color = 'var(--danger)'; status.innerText = 'Cloud sync isn\'t configured.'; return; }
+      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Uploading a test image to Drive...';
+      const url = await uploadImageToCloud(TEST_PIXEL_BASE64, 'portal-test-pixel.png', 'image/png');
+      if (url) {
+        status.style.color = 'var(--accent)';
+        status.innerHTML = `Drive upload works! <a href="${url}" target="_blank" rel="noopener">View test file</a>. Gallery/Policy uploads should work too.`;
+      } else {
+        status.style.color = 'var(--danger)';
+        status.innerText = 'Drive upload FAILED — this is likely why Gallery/Policy uploads aren\'t showing. Open the Apps Script editor, run any function once manually (e.g. getAllData) via the Run button, approve the Drive permission when prompted, then redeploy and try again.';
+      }
+      btn.disabled = false;
+    }
+
+    async function testCloudConnection() {
+      const status = document.getElementById('testCloudStatus');
+      const btn = document.getElementById('testCloudBtn');
+      if (!CLOUD_SYNC_ENABLED) {
+        status.style.color = 'var(--danger)';
+        status.innerText = 'GAS_URL is not set in this HTML file — cloud sync was never configured.';
+        return;
+      }
+      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Testing...';
+      try {
+        const res = await fetch(GAS_URL + '?action=getAll&t=' + Date.now());
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'ok') {
+          const data = json.data || {};
+          const keys = Object.keys(data);
+          const summary = keys.map(k => {
+            const v = data[k];
+            const count = Array.isArray(v) ? v.length : (v && typeof v === 'object' ? Object.keys(v).length : (v ? 1 : 0));
+            return `${k} (${count})`;
+          }).join(', ');
+          status.style.color = 'var(--accent)';
+          status.innerText = `Connected. Tabs & item counts: ${summary || '(none yet)'}.`;
+          console.log('Cloud data snapshot:', data); // full detail in the browser console (F12) if needed
+        } else {
+          status.style.color = 'var(--danger)';
+          status.innerText = 'Reached the Apps Script but it returned an error: ' + ((json && json.message) || 'unknown — check the Apps Script deployment logs.');
+        }
+      } catch (err) {
+        status.style.color = 'var(--danger)';
+        status.innerText = 'Could not reach the Apps Script URL at all. Check that it\'s deployed as "Anyone" access and the URL in GAS_URL is correct and current.';
+      }
+      btn.disabled = false;
+    }
+
     async function sendTestAlertEmail() {
       const btn = document.getElementById('testEmailBtn');
       const status = document.getElementById('testEmailStatus');
@@ -1911,12 +2007,22 @@
     }
     function deleteAudit(id){ LocalDB.set('audits', LocalDB.get('audits', []).filter(a => a.id !== id)); renderAudits(); }
 
+    function reportTypeBadge(type) {
+      const t = type || 'Incident';
+      const styles = {
+        'Incident': { bg: 'rgba(11,125,191,.14)', fg: '#0b7dbf' },
+        'Near Miss': { bg: 'rgba(245,165,36,.18)', fg: '#9a6300' },
+        'Unsafe Condition': { bg: 'rgba(139,58,183,.16)', fg: '#7a2fb0' }
+      };
+      const s = styles[t] || { bg: 'rgba(0,0,0,.08)', fg: 'inherit' };
+      return `<span class="status-pill" style="background:${s.bg};color:${s.fg}">${escapeHtml(t)}</span>`;
+    }
     function renderDashboard() {
         const list = LocalDB.get('reports', []);
         document.querySelector('#dashTable tbody').innerHTML = list.map((r) => `
-            <tr><td>${r.date}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td>
+            <tr><td>${r.date}</td><td>${reportTypeBadge(r.type)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.loc || '-')}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td>
             <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button></td></tr>
-        `).join('');
+        `).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No reports yet.</td></tr>';
     }
     function deleteReport(id){
       LocalDB.set('reports', LocalDB.get('reports', []).filter(r => r.id !== id));
@@ -1928,14 +2034,16 @@
             id: Date.now(),
             date: document.getElementById('rDate').value,
             name: document.getElementById('rName').value,
+            loc: document.getElementById('rLoc').value,
+            type: document.getElementById('rType').value,
             sev: document.getElementById('rSev').value,
             desc: document.getElementById('rDesc').value
         };
         const list = LocalDB.get('reports');
         list.push(report);
         LocalDB.set('reports', list);
-        logActivity('Incident reported', `${report.sev} severity at ${report.name ? 'reported by ' + report.name : 'unknown location'}`);
-        alert('Incident Submitted');
+        logActivity(`${report.type} reported`, `${report.sev} severity at ${report.loc || 'unspecified location'}`);
+        alert(report.type + ' submitted');
         e.target.reset();
         renderDashboard();
         refreshStats();
@@ -2144,17 +2252,131 @@
         document.querySelector('#visitorTable tbody').innerHTML = list.map(v => `
             <tr><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.company)}</td><td>${escapeHtml(v.mobile||'')}</td>
               <td>${escapeHtml(v.time)}</td><td>${escapeHtml(v.brief||'No')}</td><td>${escapeHtml(v.ppe||'')}</td><td>${escapeHtml(v.factory)}</td>
-              <td><button class="btn-danger btn-sm" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
-        `).join('');
+              <td><button class="ghost-dark btn-sm" onclick="reprintVisitorCertificate(${v.id})">🖨️ Certificate</button>
+              <button class="btn-danger btn-sm" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
+        `).join('') || '<tr><td colspan="8" style="text-align:center;color:grey">No visitors logged yet.</td></tr>';
+    }
+    function reprintVisitorCertificate(id) {
+      const v = LocalDB.get('visitors', []).find(x => x.id === id);
+      if (v) generateVisitorCertificate(v);
     }
     function deleteVisitor(id){ LocalDB.set('visitors', LocalDB.get('visitors', []).filter(v => v.id !== id)); renderVisitors();
     }
+
+    // --- Emergency & ERT Contacts ---
+    const DEFAULT_CONTACTS = [
+      { id: 1, name: 'West Bengal Police', number: '100', category: 'Emergency', factory: '' },
+      { id: 2, name: 'Fire Brigade', number: '101', category: 'Emergency', factory: '' },
+      { id: 3, name: 'Ambulance', number: '102', category: 'Emergency', factory: '' },
+      { id: 4, name: 'Medical Helpline', number: '+919830079999', category: 'Emergency', factory: '' },
+      { id: 5, name: 'Child Helpline', number: '1098', category: 'Emergency', factory: '' },
+      { id: 6, name: 'Women Helpline', number: '1091', category: 'Emergency', factory: '' },
+      { id: 7, name: 'Tarsons HSE Manager', number: '+917980326735', category: 'Emergency', factory: '' },
+      { id: 8, name: 'TARSONS PRODUCTS LIMITED (H.O)', number: '+9103335220300', category: 'Emergency', factory: '' },
+      { id: 9, name: 'Nasiruddin Sk', number: '+919804081106', category: 'ERT', factory: 'Jangalpur' },
+      { id: 10, name: 'Basiruddin Mallik', number: '+919831604820', category: 'ERT', factory: 'Dhulagarh' },
+      { id: 11, name: 'Ali Hapej', number: '+919876543210', category: 'ERT', factory: 'Panchla' },
+      { id: 12, name: 'SK Rafikul', number: '+919876543211', category: 'ERT', factory: 'Amta' }
+    ];
+    function renderContacts() {
+      let contacts = LocalDB.get('contacts', null);
+      if (!contacts) { contacts = DEFAULT_CONTACTS.slice(); LocalDB.set('contacts', contacts); }
+      const emergency = contacts.filter(c => c.category === 'Emergency');
+      const ert = contacts.filter(c => c.category === 'ERT');
+      document.getElementById('emergencyContactsBody').innerHTML = emergency.map(c => `
+        <tr><td>${escapeHtml(c.name)}</td><td><a href="tel:${escapeHtml(c.number)}">☎ ${escapeHtml(c.number)}</a></td>
+        <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteContact(${c.id})">Delete</button></td></tr>
+      `).join('') || '<tr><td colspan="3" style="text-align:center;color:grey">No emergency contacts yet.</td></tr>';
+      document.getElementById('ertContactsBody').innerHTML = ert.map(c => `
+        <tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.factory || '-')}</td><td><a href="tel:${escapeHtml(c.number)}">☎ ${escapeHtml(c.number)}</a></td>
+        <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteContact(${c.id})">Delete</button></td></tr>
+      `).join('') || '<tr><td colspan="4" style="text-align:center;color:grey">No ERT members yet.</td></tr>';
+    }
+    function addContact(e) {
+      e.preventDefault();
+      const category = document.getElementById('contCategory').value;
+      const obj = {
+        id: Date.now(),
+        name: document.getElementById('contName').value.trim(),
+        number: document.getElementById('contNumber').value.trim(),
+        category,
+        factory: category === 'ERT' ? document.getElementById('contFactory').value : ''
+      };
+      const contacts = LocalDB.get('contacts', DEFAULT_CONTACTS.slice());
+      contacts.push(obj);
+      LocalDB.set('contacts', contacts);
+      logActivity('Contact added', `${obj.name} (${obj.category})`);
+      e.target.reset();
+      renderContacts();
+    }
+    function deleteContact(id) {
+      if (!confirm('Delete this contact?')) return;
+      const contacts = LocalDB.get('contacts', DEFAULT_CONTACTS.slice()).filter(c => c.id !== id);
+      LocalDB.set('contacts', contacts);
+      logActivity('Contact deleted', '');
+      renderContacts();
+    }
     function generateVisitorCertificate(v){
       const w = window.open('', '_blank');
-      if(w) {
-          w.document.write(`<html><head><title>Visitor Certificate</title><style>body{font-family:sans-serif;padding:40px;text-align:center;}.box{border:3px solid #0f9b63;padding:30px;max-width:700px;margin:0 auto;text-align:left;}.row{display:flex;justify-content:space-between;margin:12px 0;border-bottom:1px dashed #ccc;padding-bottom:5px;}.label{font-weight:700;color:#555;}</style></head><body><div class="box"><h2>Visitor Induction Certificate</h2><div class="row"><div><span class="label">Name:</span> ${escapeHtml(v.name)}</div><div><span class="label">Company:</span> ${escapeHtml(v.company)}</div></div><div class="row"><div><span class="label">Factory:</span> ${escapeHtml(v.factory)}</div><div><span class="label">Mobile:</span> ${escapeHtml(v.mobile)}</div></div><p>Declared safe for entry.</p></div></body></html>`);
-          w.document.close(); w.focus(); setTimeout(() => { w.print(); w.close(); }, 500);
-      } else alert('Popup blocked!');
+      if(!w) { alert('Popup blocked! Please allow popups for this site to generate certificates.'); return; }
+      const certId = 'TPL-VIS-' + v.id.toString().slice(-6);
+      const issueDate = new Date(v.id).toLocaleString();
+      w.document.write(`<html><head><title>Visitor Induction Certificate — ${escapeHtml(v.name)}</title>
+      <style>
+        body{font-family:'Segoe UI',Arial,sans-serif;padding:30px;background:#f4f7f8;color:#0b2027}
+        .cert{max-width:750px;margin:0 auto;background:white;border:2px solid #0b7dbf;border-radius:12px;padding:0;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+        .cert-head{background:linear-gradient(100deg,#0b7dbf,#0ec9b0);color:white;padding:24px 30px;display:flex;justify-content:space-between;align-items:center}
+        .cert-head h1{margin:0;font-size:20px}
+        .cert-head .sub{font-size:12px;opacity:.9;letter-spacing:.5px;text-transform:uppercase}
+        .cert-body{padding:30px}
+        .cert-title{text-align:center;font-size:22px;font-weight:800;color:#0b7dbf;margin-bottom:4px}
+        .cert-id{text-align:center;font-size:12px;color:#5b7a84;margin-bottom:24px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-bottom:20px}
+        .field{border-bottom:1px dashed #ccc;padding-bottom:6px}
+        .field .label{font-size:11px;text-transform:uppercase;color:#5b7a84;font-weight:700;letter-spacing:.4px}
+        .field .val{font-size:15px;font-weight:600;margin-top:2px}
+        .ppe-box{background:#f4faf9;border-radius:8px;padding:14px 18px;margin:16px 0}
+        .ppe-box .label{font-size:11px;text-transform:uppercase;color:#5b7a84;font-weight:700}
+        .declare{margin-top:20px;padding:14px 18px;background:rgba(18,183,106,.08);border-left:4px solid #12b76a;border-radius:6px;font-size:13.5px}
+        .sig-row{display:flex;justify-content:space-between;margin-top:50px}
+        .sig{width:40%;text-align:center;border-top:1px solid #333;padding-top:6px;font-size:12px;color:#5b7a84}
+        .cert-foot{text-align:center;font-size:11px;color:#5b7a84;padding:14px;border-top:1px solid #eee}
+        @media print{body{background:white;padding:0} .cert{box-shadow:none;border:2px solid #0b7dbf}}
+      </style></head>
+      <body>
+        <div class="cert">
+          <div class="cert-head">
+            <div><h1>TARSONS PRODUCTS LIMITED</h1><div class="sub">HSE Portal — Visitor Induction</div></div>
+            <div style="text-align:right;font-size:12px">${escapeHtml(v.factory)}</div>
+          </div>
+          <div class="cert-body">
+            <div class="cert-title">Visitor Induction Certificate</div>
+            <div class="cert-id">Certificate ID: ${certId} &nbsp;|&nbsp; Issued: ${issueDate}</div>
+            <div class="grid">
+              <div class="field"><div class="label">Visitor Name</div><div class="val">${escapeHtml(v.name)}</div></div>
+              <div class="field"><div class="label">Company</div><div class="val">${escapeHtml(v.company)}</div></div>
+              <div class="field"><div class="label">Mobile Number</div><div class="val">${escapeHtml(v.mobile)}</div></div>
+              <div class="field"><div class="label">Person to Meet</div><div class="val">${escapeHtml(v.person||'-')}</div></div>
+              <div class="field"><div class="label">Purpose of Visit</div><div class="val">${escapeHtml(v.purpose||'-')}</div></div>
+              <div class="field"><div class="label">Factory / Location</div><div class="val">${escapeHtml(v.factory)}</div></div>
+            </div>
+            <div class="ppe-box">
+              <div class="label">PPE Issued</div>
+              <div class="val" style="margin-top:4px">${escapeHtml(v.ppe || 'None')}</div>
+            </div>
+            <div class="declare">
+              ✔ Safety briefing ${v.brief === 'Yes' ? 'has been given' : 'was NOT recorded'} to this visitor.
+              This visitor is declared inducted and safe for entry into factory premises for the stated purpose only, subject to compliance with all site safety rules.
+            </div>
+            <div class="sig-row">
+              <div class="sig">Visitor Signature</div>
+              <div class="sig">Authorized By (HSE / Security)</div>
+            </div>
+          </div>
+          <div class="cert-foot">This certificate is system-generated by the TARSONS HSE Portal and is valid only for the date of issue.</div>
+        </div>
+      </body></html>`);
+      w.document.close(); w.focus(); setTimeout(() => { w.print(); }, 400);
     }
 
     function openPTWModal(){ populateFactorySelects();
@@ -2546,24 +2768,137 @@
 
       setTimeout(() => {
         typing.style.display = 'none';
-        
-        let reply = "I'm here to support your HSE goals. For specific policies or PTW access, please use the navigation bar.";
-        const lower = msg.toLowerCase();
-        if (lower.includes('contact') || lower.includes('phone') || lower.includes('call') || lower.includes('number')) {
-          reply = "You can view emergency contacts in the Contact tab. Immediate HSE support: Nasiruddin Sk (Jangalpur) or Basiruddin Mallik (Dhulagarh).";
-        } else if (lower.includes('ppe') || lower.includes('mask') || lower.includes('helmet') || lower.includes('goggles')) {
-          reply = "PPE inventory can be managed in the PPE tab. Please ensure stock levels remain above the reorder limit.";
-        } else if (lower.includes('ptw') || lower.includes('permit')) {
-          reply = "Permit to Work (PTW) can be requested under the PTW tab. Ensure you fill out the factory, location, and risk assessment.";
-        } else if (lower.includes('hira') || lower.includes('risk')) {
-          reply = "HIRA entries are available in the HIRA tab. You can add activities, hazard assessments, and control measures there.";
-        } else if (lower.includes('waste') || lower.includes('disposal') || lower.includes('hazardous')) {
-          reply = "Waste log is maintained under Waste Mgmt. Hazardous waste should be logged accurately to calculate net stock.";
-        }
-        
-        appendMessage('bot', reply);
+        appendMessage('bot', getAIReply(msg));
         msgContainer.scrollTop = msgContainer.scrollHeight;
-      }, 1000);
+      }, 500);
+    }
+
+    // Rule-based assistant that reads live portal data so answers reflect what's
+    // actually in the system right now, not static canned text.
+    function getAIReply(msg) {
+      const lower = msg.toLowerCase();
+      const today = new Date();
+      const daysUntil = (d) => Math.ceil((new Date(d) - today) / (1000*60*60*24));
+
+      // Greeting
+      if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(lower)) {
+        return `Hi${currentUser ? ' ' + currentUser.username : ''}! Ask me about incidents, PTW, HIRA, PPE stock, extinguishers, legal compliance, CAPA, training, or contacts — I'll pull the current numbers for you.`;
+      }
+
+      // Overall safety snapshot
+      if (lower.includes('how are we doing') || lower.includes('overview') || lower.includes('summary') || lower.includes('safety stat')) {
+        const reports = LocalDB.get('reports', []);
+        const safeDays = document.getElementById('safeDays') ? document.getElementById('safeDays').innerText : '–';
+        const trir = document.getElementById('trirTile') ? document.getElementById('trirTile').innerText : '–';
+        return `Currently: ${safeDays} safe days, ${reports.length} total reports logged, TRIR ${trir}. Ask "overdue items" for a full compliance check.`;
+      }
+
+      // TRIR / LTIFR explanation with live numbers
+      if (lower.includes('trir') || lower.includes('ltifr') || lower.includes('injury rate') || lower.includes('frequency rate')) {
+        const trir = document.getElementById('trirTile') ? document.getElementById('trirTile').innerText : '–';
+        const ltifr = document.getElementById('ltifrTile') ? document.getElementById('ltifrTile').innerText : '–';
+        if (trir === '–') return `TRIR/LTIFR aren't calculated yet — an Admin needs to enter monthly man-hours per factory in Admin → Settings first.`;
+        return `Current TRIR is ${trir} (recordable incidents per 200,000 man-hours) and LTIFR is ${ltifr} (lost-time injuries per 1,000,000 man-hours), based on man-hours entered in Settings.`;
+      }
+
+      // Near miss / unsafe condition
+      if (lower.includes('near miss') || lower.includes('unsafe condition') || lower.includes('unsafe act')) {
+        const reports = LocalDB.get('reports', []);
+        const nm = reports.filter(r => r.type === 'Near Miss').length;
+        const uc = reports.filter(r => r.type === 'Unsafe Condition').length;
+        return `${nm} Near Miss and ${uc} Unsafe Condition reports have been logged so far. You can submit a new one from the Incidents tab — select the report type there.`;
+      }
+
+      // Incidents
+      if (lower.includes('incident')) {
+        const reports = LocalDB.get('reports', []).filter(r => !r.type || r.type === 'Incident');
+        const thisMonth = reports.filter(r => { const d = new Date(r.date); return !isNaN(d) && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear(); }).length;
+        return `${reports.length} incidents logged in total, ${thisMonth} this month. You can submit a new one, or view/edit details, in the Incidents tab.`;
+      }
+
+      // Fire extinguishers — overdue check
+      if (lower.includes('extinguisher') || lower.includes('fire safety')) {
+        const list = LocalDB.get('extinguishers', []);
+        const overdue = list.filter(x => x.due && daysUntil(x.due) < 0);
+        const dueSoon = list.filter(x => x.due && daysUntil(x.due) >= 0 && daysUntil(x.due) <= 30);
+        if (!list.length) return `No fire extinguishers are registered yet — an Admin can add them under Admin → Fire Extinguishers.`;
+        return `${list.length} extinguishers registered. ${overdue.length} overdue, ${dueSoon.length} due within 30 days. Check Admin → Fire Extinguishers for details.`;
+      }
+
+      // Legal / statutory compliance
+      if (lower.includes('legal') || lower.includes('license') || lower.includes('licence') || lower.includes('statutory') || lower.includes('compliance')) {
+        const list = LocalDB.get('legal', []);
+        const expiring = list.filter(x => x.expiry && daysUntil(x.expiry) <= 30);
+        return `${list.length} legal/statutory items on record, ${expiring.length} expiring within 30 days. See the Legal tab for the full register.`;
+      }
+
+      // CAPA
+      if (lower.includes('capa') || lower.includes('corrective') || lower.includes('preventive action')) {
+        const list = LocalDB.get('capa', []);
+        const overdue = list.filter(x => x.status !== 'Closed' && x.due && daysUntil(x.due) < 0);
+        const open = list.filter(x => x.status !== 'Closed');
+        return `${open.length} CAPA action(s) currently open, ${overdue.length} overdue. Manage these in Admin → CAPA Tracker.`;
+      }
+
+      // Overdue items across everything (compliance check)
+      if (lower.includes('overdue') || lower.includes('due soon') || lower.includes('what needs attention') || lower.includes('what is due')) {
+        const ext = LocalDB.get('extinguishers', []).filter(x => x.due && daysUntil(x.due) <= 30);
+        const legal = LocalDB.get('legal', []).filter(x => x.expiry && daysUntil(x.expiry) <= 30);
+        const capa = LocalDB.get('capa', []).filter(x => x.status !== 'Closed' && x.due && daysUntil(x.due) < 0);
+        if (!ext.length && !legal.length && !capa.length) return `Nothing is overdue or due soon right now — everything tracked looks current. 👍`;
+        return `Needs attention: ${ext.length} extinguisher(s), ${legal.length} legal item(s) expiring soon, ${capa.length} overdue CAPA action(s). Check the bell icon for the full list.`;
+      }
+
+      // PPE
+      if (lower.includes('ppe') || lower.includes('mask') || lower.includes('helmet') || lower.includes('goggles') || lower.includes('safety shoe')) {
+        const items = LocalDB.get('ppe', []);
+        const low = Array.isArray(items) ? items.filter(p => p.qty <= p.reorder) : [];
+        return `PPE stock and issue log are in the PPE tab. ${low.length ? low.length + ' item(s) are at or below reorder level.' : 'All tracked items look adequately stocked.'}`;
+      }
+
+      // PTW
+      if (lower.includes('ptw') || lower.includes('permit')) {
+        const list = LocalDB.get('ptw', []);
+        const pending = list.filter(p => p.status === 'Pending').length;
+        return `${pending} Permit(s) to Work are pending approval out of ${list.length} total. You can request a new PTW from the PTW tab — an Admin will approve or reject it.`;
+      }
+
+      // HIRA
+      if (lower.includes('hira') || lower.includes('risk assessment') || lower.includes('hazard')) {
+        const list = LocalDB.get('hira', []);
+        return `${list.length} HIRA entries on record. View them in the HIRA tab; Admins can add new activities, hazards, and controls there.`;
+      }
+
+      // Waste
+      if (lower.includes('waste') || lower.includes('disposal') || lower.includes('hazardous')) {
+        const list = LocalDB.get('waste', []);
+        return `${list.length} waste log entries recorded. See Waste Mgmt for the full log — Admins can add new entries there.`;
+      }
+
+      // Training
+      if (lower.includes('training') || lower.includes('induction') || lower.includes('certificat')) {
+        const records = LocalDB.get('records', []);
+        return `${records.length} training completion record(s) on file. Modules and records are in the Training tab. Visitor induction certificates are generated automatically when an Admin logs a visitor there.`;
+      }
+
+      // Gallery / policy
+      if (lower.includes('gallery') || lower.includes('photo')) {
+        const photos = LocalDB.get('gallery', []);
+        return `${photos.length} photo(s) currently in the EHS Gallery. Anyone can view them; only Admins can upload or delete.`;
+      }
+      if (lower.includes('policy') || lower.includes('policies') || lower.includes('document')) {
+        const pols = LocalDB.get('policies', []);
+        return `${pols.length} policy document(s) uploaded. Click any tile in the Policies tab to open it.`;
+      }
+
+      // Contacts — now reads the dynamic list instead of a hardcoded name
+      if (lower.includes('contact') || lower.includes('phone') || lower.includes('call') || lower.includes('emergency number')) {
+        const contacts = LocalDB.get('contacts', null) || DEFAULT_CONTACTS;
+        const ert = contacts.filter(c => c.category === 'ERT');
+        return `Emergency and Factory ERT contacts are in the Contact tab (☎ icons are tap/click-to-call). ${ert.length} ERT member(s) currently listed across all factories.`;
+      }
+
+      return "I can answer questions about incidents, near misses, PTW, HIRA, waste, PPE, extinguishers, legal compliance, CAPA, training, gallery, policies, or contacts — try asking something like \"what's overdue\" or \"how many open PTWs\".";
     }
 
     function appendMessage(sender, text) {
@@ -2613,6 +2948,9 @@
     window.deleteRecord = deleteRecord;
     window.addVisitor = addVisitor;
     window.deleteVisitor = deleteVisitor;
+    window.reprintVisitorCertificate = reprintVisitorCertificate;
+    window.addContact = addContact;
+    window.deleteContact = deleteContact;
     window.openPTWModal = openPTWModal;
     window.createPTW = createPTW;
     window.renderPTWList = renderPTWList;
@@ -2641,6 +2979,8 @@
     window.renderActivityLog = renderActivityLog;
     window.saveFactorySettings = saveFactorySettings;
     window.sendTestAlertEmail = sendTestAlertEmail;
+    window.testCloudConnection = testCloudConnection;
+    window.testDriveUpload = testDriveUpload;
     window.renderFactorySettingsForm = renderFactorySettingsForm;
     window.exportTableToExcel = exportTableToExcel;
     window.showExtinguisherQR = showExtinguisherQR;
