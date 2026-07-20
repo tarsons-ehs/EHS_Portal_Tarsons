@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b7dbf">
   <title>TARSONS PRODUCTS LIMITED — HSE Portal</title>
+   <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
   <link rel="manifest" href="manifest.json">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -137,6 +140,13 @@
   body.is-admin div.admin-only,
   body.is-admin span.admin-only{display:block}
 
+  /* ---------- Safety Officer + Admin visibility (can add, cannot delete) ---------- */
+  .officer-only{display:none}
+  body.is-officer-up .officer-only{display:revert}
+  body.is-officer-up li.officer-only{display:list-item}
+  body.is-officer-up div.officer-only,
+  body.is-officer-up span.officer-only{display:block}
+
   /* ---------- Cards / layout ---------- */
   .card{
     background:linear-gradient(180deg,var(--panel),#ffffff);padding:20px;border-radius:var(--radius);
@@ -211,7 +221,7 @@
   /* ---------- Dark mode ---------- */
   body.dark-theme{--panel:#132234;--text-dark:#e8f0f2;--border:#24384a;--muted:#8fa3ad}
   body.dark-theme .card{background:linear-gradient(180deg,#101e2c,#0c1826);border-color:rgba(255,255,255,.08)}
-  body.dark-theme .factory-card,body.dark-theme .gallery-item{background:#101e2c;border-color:#24384a}
+  body.dark-theme .factory-card,body.dark-theme .gallery-item,body.dark-theme .blog-card{background:#101e2c;border-color:#24384a}
   body.dark-theme input,body.dark-theme select,body.dark-theme textarea{background:#0c1826;color:#e8f0f2;border-color:#24384a}
   body.dark-theme th{background:rgba(255,255,255,.04)}
   body.dark-theme .tile{background:linear-gradient(135deg,rgba(18,183,106,0.14),rgba(11,125,191,0.14))}
@@ -220,13 +230,13 @@
   tbody tr:hover{background:rgba(18,183,106,.05)}
 
   /* ---------- Modals ---------- */
-  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal, #qrModal{
+  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal, #qrModal, #emailComplaintModal, #blogReadModal{
     position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,20,0.72);display:none;
     align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);
     animation:overlayIn .18s ease both;padding:16px;
   }
   @keyframes overlayIn{from{opacity:0}to{opacity:1}}
-  #loginBox, #siteStatsBox, #noticeBox, #ptwBox, #notificationBox, #ppeIssueBox{
+  #loginBox, #siteStatsBox, #noticeBox, #ptwBox, #notificationBox, #ppeIssueBox, #emailComplaintBox, #blogReadBox{
     width:100%;max-width:500px;background:white;padding:22px;border-radius:18px;color:var(--text-dark);
     max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .22s cubic-bezier(.2,.9,.3,1.2) both;
   }
@@ -329,6 +339,38 @@
   #aiInput{flex:1;border:1.5px solid #ddd;border-radius:25px;padding:10px 15px;outline:none;transition:border .2s}
   #aiInput:focus{border-color:var(--accent-2)}
   #aiInputArea button{background:var(--accent-2);color:white;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+
+  /* ---------- Complaint / Suggestion Box (hover widget, all pages) ---------- */
+  #complaintBtn{
+    position:fixed;bottom:25px;left:25px;width:60px;height:60px;
+    background:linear-gradient(135deg,var(--warning),#ef8354);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 10px 28px rgba(0,0,0,.35);z-index:10000;transition:all .3s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  #complaintBtn:hover{transform:scale(1.1) rotate(-5deg)}
+  #complaintBox{
+    position:fixed;bottom:95px;left:25px;width:360px;max-width:92vw;max-height:80vh;overflow-y:auto;
+    background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);display:none;flex-direction:column;
+    z-index:10000;border:1px solid rgba(0,0,0,.08);animation:modalIn .2s ease both;color:var(--text-dark);
+  }
+  @media (max-width:480px){ #complaintBox{width:92vw;left:4vw;max-height:75vh;bottom:90px} }
+  #complaintHeader{background:linear-gradient(100deg,var(--warning),#ef8354);color:white;padding:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center;border-radius:20px 20px 0 0}
+  #complaintBoxBody{padding:16px}
+  body.dark-theme #complaintBox{background:#101e2c}
+
+  /* ---------- EHS Blog / News ---------- */
+  .blog-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(270px,1fr));gap:18px;margin-top:16px}
+  .blog-card{background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:transform .2s, box-shadow .2s;cursor:pointer;display:flex;flex-direction:column;position:relative}
+  .blog-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
+  .blog-card-img{height:150px;width:100%;object-fit:cover;display:block}
+  .blog-card-noimg{height:150px;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,#f4f8f7,#eaf3f1)}
+  .blog-card-body{padding:16px;flex-grow:1;display:flex;flex-direction:column}
+  .blog-card-title{font-weight:800;color:var(--text-dark);font-size:15.5px;margin-bottom:4px;line-height:1.3}
+  .blog-card-meta{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
+  .blog-card-excerpt{font-size:13px;color:var(--muted);line-height:1.5;flex-grow:1}
+  .blog-card-readmore{font-size:12.5px;font-weight:700;color:var(--accent-3);margin-top:10px}
+  .blog-del{position:absolute;top:10px;right:10px;background:rgba(20,20,20,.65);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .blog-del:hover{background:var(--danger)}
 </style>
 </head>
 <body>
@@ -382,9 +424,10 @@
         <li><a href="#" data-nav="training" onclick="requireAuthAndGo('training')">🎓 Training</a></li>
         <li><a href="#" data-nav="legal" onclick="requireAuthAndGo('legal')">⚖️ Legal</a></li>
         <li><a href="#" data-nav="gallery" onclick="navTo('gallery')">🖼️ EHS Gallery</a></li>
+        <li><a href="#" data-nav="blog" onclick="navTo('blog')">📰 Blog/News</a></li>
         <li><a href="#" data-nav="policies" onclick="navTo('policies')">📄 Policies</a></li>
         <li><a href="#" data-nav="contact" onclick="navTo('contact')">☎ Contact</a></li>
-        <li><a href="#" data-nav="adminSection" onclick="requireAdminAndGo('adminSection')" class="admin-only">🛠️ Admin</a></li>
+        <li><a href="#" data-nav="adminSection" onclick="requireAuthAndGo('adminSection')">🛠️ Admin</a></li>
       </ul>
     </nav>
   </header>
@@ -448,7 +491,7 @@
         </div>
         <p class="small" style="color:var(--muted)">Hazard Identification and Risk Assessment Register</p>
 
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
           <h4>Add New Activity Assessment</h4>
           <form onsubmit="addHIRA(event)">
             <div class="two-cols">
@@ -486,7 +529,7 @@
         </div>
         <p class="small" style="margin:-6px 0 12px;color:var(--muted);text-transform:none;font-weight:500;">Stock figures are net totals: every "Stored" entry adds to stock, every "Disposed" entry subtracts from it.</p>
 
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
           <h4>Log Waste Entry</h4>
           <form onsubmit="addWaste(event)">
             <div class="two-cols">
@@ -529,12 +572,12 @@
             <div class="admin-tab-btn active" id="tabExt" onclick="switchAdminTab('ext')">Fire Extinguishers</div>
             <div class="admin-tab-btn" id="tabCapa" onclick="switchAdminTab('capa')">CAPA Tracker</div>
             <div class="admin-tab-btn" id="tabAudit" onclick="switchAdminTab('audit')">Safety Audits</div>
-            <div class="admin-tab-btn" id="tabActivity" onclick="switchAdminTab('activity')">Activity Log</div>
-            <div class="admin-tab-btn" id="tabSettings" onclick="switchAdminTab('settings')">Settings</div>
-            <div class="admin-tab-btn" id="tabUsers" onclick="switchAdminTab('users')">Manage Users</div>
+            <div class="admin-tab-btn" id="tabComplaints" onclick="switchAdminTab('complaints')">Complaints/Suggestions</div>
+            <div class="admin-tab-btn admin-only" id="tabActivity" onclick="switchAdminTab('activity')">Activity Log</div>
+            <div class="admin-tab-btn admin-only" id="tabUsers" onclick="switchAdminTab('users')">Manage Users</div>
         </div>
         <div id="extContainer">
-            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+            <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
                 <h4>Add New Extinguisher</h4>
                 <form onsubmit="addExtinguisher(event)">
                       <div class="two-cols">
@@ -565,11 +608,11 @@
                     <button class="ghost-dark" onclick="printExtRegister()">Print Report</button>
                  </div>
             </div>
-            <div style="overflow-x:auto"><table id="extTable"><thead><tr><th>Factory</th><th>ID</th><th>Type</th><th>Capacity</th><th>Due Date</th><th>Status</th><th class="admin-only">QR</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+            <div style="overflow-x:auto"><table id="extTable"><thead><tr><th>Factory</th><th>ID</th><th>Type</th><th>Capacity</th><th>Due Date</th><th>Status</th><th>QR</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
         </div>
 
         <div id="capaContainer" style="display:none">
-            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+            <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
                 <h4>New Corrective / Preventive Action</h4>
                 <form onsubmit="addCAPA(event)">
                     <div class="two-cols">
@@ -602,26 +645,10 @@
             <div style="overflow-x:auto"><table id="activityTable"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr></thead><tbody></tbody></table></div>
         </div>
 
-        <div id="settingsContainer" style="display:none">
-            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--danger);">
-                <h4>Cloud Connection Diagnostics</h4>
-                <p class="small" style="color:var(--muted)">Gallery, Policy, and email alerts all depend on the connection to your Google Sheet backend. Test it here if anything isn't showing up for other users.</p>
-                <button class="ghost-dark btn-sm" id="testCloudBtn" onclick="testCloudConnection()">🔌 Test Cloud Connection</button>
-                <button class="ghost-dark btn-sm" id="testDriveBtn" onclick="testDriveUpload()">🖼️ Test Drive Upload</button>
-                <span id="testCloudStatus" class="small" style="margin-left:10px;color:var(--muted)"></span>
-            </div>
-            <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
-                <h4>Email Alerts</h4>
-                <p class="small" style="color:var(--muted)">Daily overdue alerts are sent from the Apps Script backend, not from this page directly. Use this to confirm mail is actually configured and working.</p>
-                <button class="ghost-dark btn-sm" id="testEmailBtn" onclick="sendTestAlertEmail()">📧 Send Test Alert Email</button>
-                <span id="testEmailStatus" class="small" style="margin-left:10px;color:var(--muted)"></span>
-            </div>
-        </div>
-        
         <div id="auditContainer" style="display:none">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3>Safety Audit Records</h3>
-                <button class="primary" onclick="toggleAuditForm()">Conduct New Audit</button>
+                <button class="primary officer-only" onclick="toggleAuditForm()">Conduct New Audit</button>
             </div>
             <div id="auditFormBox" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; display:none;">
               <h4>New Audit</h4>
@@ -655,7 +682,23 @@
                 </div>
               </form>
             </div>
-            <div style="overflow-x:auto"><table id="auditTable"><thead><tr><th>Date</th><th>Factory</th><th>Auditor</th><th>Score</th><th>Action</th></tr></thead><tbody></tbody></table></div>
+            <div style="overflow-x:auto"><table id="auditTable"><thead><tr><th>Date</th><th>Factory</th><th>Auditor</th><th>Score</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div id="complaintsContainer" style="display:none">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h3 style="margin:0">Complaint / Suggestion Register</h3>
+                  <p class="small" style="margin:4px 0 0;color:var(--muted);text-transform:none;font-weight:500;">Visible to every user. Status, target date and responsible person/department can be updated by Safety Officers and Admin. Only Admin can email or delete an entry.</p>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="primary btn-sm" onclick="toggleComplaintBox()">📢 New Entry</button>
+                    <button class="ghost-dark btn-sm" onclick="exportTableToExcel('complaintsTable','Complaints_Suggestions')">⬇ Excel</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto; margin-top:12px">
+                <table id="complaintsTable"><thead><tr><th>Type</th><th>Name</th><th>Date</th><th>Location</th><th>Complaint / Suggestion</th><th>Status</th><th>Target Date</th><th>Responsible Person/Dept.</th><th>Action</th></tr></thead><tbody></tbody></table>
+            </div>
         </div>
 
         <div id="usersContainer" style="display:none">
@@ -692,7 +735,7 @@
       <div class="card">
         <h2>Incident Register</h2>
 
-        <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid var(--accent);">
           <h4>Report / Add Incident, Near Miss, or Unsafe Condition</h4>
           <form id="incForm" onsubmit="submitIncident(event)">
             <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Location" required></div>
@@ -720,7 +763,7 @@
     <section id="ppe" style="display:none" class="container">
       <div class="card">
         <h2>PPE Inventory</h2>
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
               <h4>Add / Restock Item</h4>
               <p class="small" style="text-transform:none;font-weight:500;margin:-4px 0 8px;">If the item name already exists, the quantity below is <b>added to its current stock</b> instead of creating a duplicate row.</p>
             <form onsubmit="addPPEItem(event)">
@@ -731,7 +774,7 @@
         </div>
         <h3>Current Stock</h3>
         <div style="overflow-x:auto; margin-bottom: 20px;">
-            <table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
+            <table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th class="officer-only">Actions</th></tr></thead><tbody></tbody></table>
         </div>
         
         <h3 style="border-top:1px solid #eee; padding-top:15px;">PPE Issue Log</h3>
@@ -744,7 +787,7 @@
     <section id="training" style="display:none" class="container">
       <div class="card">
         <h2>Safety Training</h2>
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
             <h4>Define Module</h4>
             <form onsubmit="addModule(event)">
                  <div class="two-cols"><input id="modName" placeholder="Module Name" required><input id="modFreq" type="number" placeholder="Frequency (Months)" required></div>
@@ -754,7 +797,7 @@
         <h3>Modules</h3>
         <table id="modTable" style="margin-bottom:20px"><thead><tr><th>Module</th><th>Frequency</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
         
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
              <h4>Record Completion</h4>
             <form onsubmit="addRecord(event)">
                 <div class="two-cols"><input id="recName" placeholder="Employee Name" required><select id="recMod" required><option value="">Select Module</option></select></div>
@@ -764,11 +807,11 @@
         <h3>Records</h3>
          <table id="recTable"><thead><tr><th>Employee</th><th>Module</th><th>Date</th><th>Next Due</th><th class="admin-only">Actions</th></tr></thead><tbody></tbody></table>
 
-        <div class="visitor-card admin-only" style="margin-top:30px; border-top: 2px solid #eee; padding-top:20px;">
+        <div class="visitor-card" style="margin-top:30px; border-top: 2px solid #eee; padding-top:20px;">
           <h3>Visitor Safety Induction</h3>
           <p style="margin:6px 0 12px;color:var(--muted)">Record visitor induction, issue PPE and generate visitor induction certificate.</p>
           <div style="display:grid; gap:8px; margin-bottom:12px;">
-            <form id="visitorForm" onsubmit="addVisitor(event)">
+            <form id="visitorForm" class="officer-only" onsubmit="addVisitor(event)">
               <div class="two-cols">
                 <input id="visName" placeholder="Visitor Name" required>
                 <input id="visCompany" placeholder="Company Name" required>
@@ -815,7 +858,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <h2>Permit To Work (PTW)</h2>
           <div>
-            <button class="primary" onclick="openPTWModal()">Create PTW</button>
+            <button class="primary officer-only" onclick="openPTWModal()">Create PTW</button>
             <button class="ghost-dark" onclick="renderPTWList()">Refresh</button>
             <button class="ghost-dark" onclick="renderPTWList('all')">All</button>
             <button class="ghost-dark" onclick="renderPTWList('pending')">Pending</button>
@@ -832,7 +875,7 @@
           </div>
           <div style="overflow-x:auto;">
             <table id="ptwTable">
-              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th class="admin-only">Actions</th></tr></thead>
+              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th class="officer-only">Actions</th></tr></thead>
               <tbody></tbody>
              </table>
           </div>
@@ -850,7 +893,7 @@
             </div>
         </div>
         
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent-3);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent-3);">
             <h4>Add Statutory Requirement</h4>
             <form onsubmit="addLegalItem(event)">
                 <div class="two-cols"><input id="legAct" placeholder="Act / Rule Name" required><input id="legLicense" placeholder="License / Permit Name" required></div>
@@ -869,7 +912,7 @@
     <section id="policies" style="display:none" class="container">
       <div class="card">
         <h2>Policies & SOPs</h2>
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
           <h4>Upload Policy PDF</h4>
           <form onsubmit="uploadPolicy(event)">
             <div class="two-cols">
@@ -886,7 +929,7 @@
     <section id="gallery" style="display:none" class="container">
       <div class="card">
         <h2>🖼️ EHS Gallery</h2>
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent);">
           <h4>Upload Photo</h4>
           <input id="galUpload" type="file" accept="image/*">
           <button class="primary btn-sm" onclick="uploadPhoto()" style="margin-left:8px">Upload</button>
@@ -895,9 +938,29 @@
       </div>
     </section>
 
+    <section id="blog" style="display:none" class="container">
+      <div class="card">
+        <h2>📰 EHS Blog / News</h2>
+        <p class="small" style="color:var(--muted);text-transform:none;font-weight:500;">Safety campaigns, announcements and updates from the HSE team.</p>
+
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:18px;border-left:4px solid var(--accent-3);">
+          <h4>Publish New Post</h4>
+          <form onsubmit="addBlogPost(event)">
+            <input id="blogTitle" placeholder="Post Title" required style="margin-bottom:8px">
+            <textarea id="blogContent" placeholder="Write the full post..." required style="min-height:120px;margin-bottom:8px"></textarea>
+            <label class="small">Cover Photo (optional)</label>
+            <input id="blogPhoto" type="file" accept="image/*">
+            <button type="submit" class="primary" style="margin-top:10px">Publish Post</button>
+          </form>
+        </div>
+
+        <div id="blogGrid" class="blog-grid"></div>
+      </div>
+    </section>
+
     <section id="contact" style="display:none" class="container">
       <div class="card">
-        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:18px;border-left:4px solid var(--accent);">
+        <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:18px;border-left:4px solid var(--accent);">
           <h4>Add Contact</h4>
           <form onsubmit="addContact(event)">
             <div class="two-cols">
@@ -1063,6 +1126,41 @@
     </div>
   </div>
 
+  <div id="emailComplaintModal">
+    <div id="emailComplaintBox">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>Email Complaint / Suggestion</h3>
+        <button class="ghost-dark btn-sm" onclick="document.getElementById('emailComplaintModal').style.display='none'">Close</button>
+      </div>
+      <p class="small" id="emailComplaintPreview" style="background:#f9f9f9;padding:10px;border-radius:8px;margin:10px 0 14px;color:var(--text-dark);text-transform:none;font-weight:500;"></p>
+      <label class="small">Send To (email address)</label>
+      <input id="emailComplaintTo" type="email" placeholder="responsible.person@company.com" required style="margin:4px 0 10px">
+      <label class="small">Subject</label>
+      <input id="emailComplaintSubject" style="margin:4px 0 10px">
+      <label class="small">Message</label>
+      <textarea id="emailComplaintBody" style="min-height:160px;margin-top:4px"></textarea>
+      <div style="text-align:right;margin-top:14px">
+        <button class="ghost-dark" onclick="document.getElementById('emailComplaintModal').style.display='none'">Cancel</button>
+        <button class="primary" onclick="sendComplaintEmail()">Send Email</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="blogReadModal" onclick="if(event.target.id==='blogReadModal') this.style.display='none'">
+    <div id="blogReadBox" style="width:92%;max-width:700px;padding:0;max-height:88vh;overflow-y:auto;position:relative;">
+      <button class="ghost-dark btn-sm" style="position:absolute;right:12px;top:12px;z-index:2" onclick="document.getElementById('blogReadModal').style.display='none'">Close</button>
+      <img id="blogReadImg" src="" alt="" style="width:100%;max-height:320px;object-fit:cover;display:none">
+      <div style="padding:24px">
+        <h2 id="blogReadTitle" style="margin-bottom:6px"></h2>
+        <div id="blogReadMeta" class="small" style="color:var(--muted);margin-bottom:16px;text-transform:none;font-weight:600;"></div>
+        <div id="blogReadContent" style="white-space:pre-wrap;line-height:1.7;color:var(--text-dark)"></div>
+        <div style="text-align:right;margin-top:20px" class="admin-only">
+          <button class="btn-danger btn-sm" onclick="deleteBlogPostFromModal()">Delete Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="aiAssistantBtn" onclick="toggleAI()">
   <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
     <path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2 22l5-1.338c1.47.851 3.179 1.338 5 1.338 5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
@@ -1083,6 +1181,36 @@
     <button onclick="sendAIMessage()">➤</button>
   </div>
 </div>
+
+  <div id="complaintBtn" onclick="toggleComplaintBox()" title="Complaint / Suggestion Box">
+    <span style="font-size:27px;line-height:1">📢</span>
+  </div>
+
+  <div id="complaintBox">
+    <div id="complaintHeader">
+      <span>Complaint / Suggestion Box</span>
+      <span style="cursor:pointer" onclick="toggleComplaintBox()">×</span>
+    </div>
+    <div id="complaintBoxBody">
+      <p class="small" style="color:var(--muted);margin:0 0 12px;text-transform:none;font-weight:500;">Raise a safety concern or share an idea to improve the workplace. Every user can see submissions under Admin → Complaints/Suggestions.</p>
+      <form id="complaintForm" onsubmit="addComplaint(event)">
+        <div class="two-cols">
+          <select id="cmpType">
+            <option value="Complaint">⚠️ Complaint</option>
+            <option value="Suggestion">💡 Suggestion</option>
+          </select>
+          <input id="cmpDate" type="date" required>
+        </div>
+        <div class="two-cols" style="margin-top:8px">
+          <input id="cmpName" placeholder="Your Name (optional)">
+          <input id="cmpLocation" placeholder="Location" required>
+        </div>
+        <textarea id="cmpText" placeholder="Describe the issue or suggestion..." style="margin-top:8px" required></textarea>
+        <button type="submit" class="primary" style="margin-top:10px;width:100%">Submit</button>
+      </form>
+      <button class="ghost-dark" style="width:100%;margin-top:10px" onclick="goToComplaintsAdmin()">📋 View All Complaints/Suggestions</button>
+    </div>
+  </div>
 
   <script type="module">
     // Import the functions you need from the SDKs you need
@@ -1222,6 +1350,8 @@
     let myChart = null;
     let currentPhotoIndex = -1;
     let selectedPPEItemForIssue = null;
+    let emailingComplaintId = null;
+    let openBlogId = null;
     
     // --- FORCE ALL FACTORIES TO SHOW ---
     const DEFAULT_FACTORIES = {
@@ -1247,11 +1377,15 @@
         const badge = document.getElementById('userBadge');
         const chip = document.getElementById('userChip');
         const isAdmin = !!(currentUser && currentUser.role === 'admin');
+        // Safety Officers can add/view but not delete — everything below "admin"
+        // but above plain "user". Admins get this tier too since they're a superset.
+        const isOfficerUp = isAdmin || !!(currentUser && currentUser.role === 'safetyofficer');
         // Toggle a body class instead of forcing inline display:block on every
         // .admin-only element — the old approach broke table cells/rows/list
         // items by forcing block display on <td>/<li> elements. CSS now
         // handles per-tag-type visibility via body.is-admin .admin-only.
         document.body.classList.toggle('is-admin', isAdmin);
+        document.body.classList.toggle('is-officer-up', isOfficerUp);
         if (currentUser) {
             badge.innerText = `${currentUser.role.toUpperCase()}: ${currentUser.username}`;
             document.getElementById('userAvatar').innerText = (currentUser.username || '?').trim().charAt(0).toUpperCase();
@@ -1309,13 +1443,14 @@
             safeCall(renderNotices); safeCall(renderFactories); safeCall(refreshStats);
             safeCall(renderChart); safeCall(renderExpiryAlerts);
         }
-        if (id === 'adminSection') { safeCall(populateFactorySelects); safeCall(renderAdminSection); safeCall(renderAudits); }
+        if (id === 'adminSection') { safeCall(populateFactorySelects); safeCall(renderAdminSection); safeCall(renderAudits); safeCall(renderComplaints); }
         if (id === 'dashboard') safeCall(renderDashboard);
         if (id === 'ppe') { safeCall(renderPPE); safeCall(renderPPELogs); }
         if (id === 'legal') safeCall(renderLegalRegister);
         if (id === 'training') { safeCall(populateFactorySelects); safeCall(renderModules); safeCall(renderRecords); safeCall(renderVisitors); }
         if (id === 'ptw') { safeCall(populateFactorySelects); safeCall(renderPTWList); }
         if (id === 'gallery') safeCall(renderGallery);
+        if (id === 'blog') safeCall(renderBlog);
         if (id === 'policies') safeCall(renderPolicies);
         if (id === 'hira') { safeCall(populateFactorySelects); safeCall(renderHIRA); }
         if (id === 'waste') { safeCall(populateFactorySelects); safeCall(renderWaste); }
@@ -1324,17 +1459,13 @@
     }
 
     function requireAuthAndGo(id) { if (!currentUser) showLogin(); else navTo(id); }
-    function requireAdminAndGo(id) {
-        if (!currentUser) { showLogin(); return; }
-        if (currentUser.role !== 'admin') { alert('This section is restricted to Admin accounts.'); return; }
-        navTo(id);
-    }
 
     function updateBell() {
         const legal = LocalDB.get('legal', []);
         const ptw = LocalDB.get('ptw', []);
         const extinguishers = LocalDB.get('extinguishers', []);
         const capa = LocalDB.get('capa', []);
+        const complaints = LocalDB.get('complaints', []);
         const today = new Date();
         
         let count = 0;
@@ -1353,6 +1484,9 @@
         capa.forEach(x => {
             if (x.status !== 'Closed' && x.due && new Date(x.due) < today) count++;
         });
+        complaints.forEach(x => {
+            if (x.status === 'Pending') count++;
+        });
         const badge = document.getElementById('bellBadge');
         if(count > 0){
             badge.style.display = 'flex';
@@ -1367,6 +1501,7 @@
         const ptw = LocalDB.get('ptw', []);
         const extinguishers = LocalDB.get('extinguishers', []);
         const capa = LocalDB.get('capa', []);
+        const complaints = LocalDB.get('complaints', []);
         const today = new Date();
         let html = '';
         const expiring = legal.filter(x => (new Date(x.expiry) - today) / (1000*60*60*24) <= 30);
@@ -1392,6 +1527,14 @@
             html += '<h4>🛠️ Overdue CAPA Actions</h4><ul style="padding-left:20px;margin-bottom:10px">';
             overdueCapa.forEach(x => {
                 html += `<li><b>${escapeHtml(x.desc.substring(0,60))}</b> — owner: ${escapeHtml(x.owner)} (${escapeHtml(x.factory)})</li>`;
+            });
+            html += '</ul>';
+        }
+        const pendingComplaints = complaints.filter(x => x.status === 'Pending');
+        if(pendingComplaints.length > 0){
+            html += '<h4>📢 New Complaints / Suggestions</h4><ul style="padding-left:20px;margin-bottom:10px">';
+            pendingComplaints.forEach(x => {
+                html += `<li><b>${escapeHtml(x.type||'Complaint')}</b> from ${escapeHtml(x.name||'Anonymous')} (${escapeHtml(x.location||'-')})</li>`;
             });
             html += '</ul>';
         }
@@ -1695,16 +1838,20 @@
     }
 
     function switchAdminTab(t) {
-        const tabs = ['ext','capa','audit','activity','settings','users'];
-        const idMap = { ext:'tabExt', capa:'tabCapa', audit:'tabAudit', activity:'tabActivity', settings:'tabSettings', users:'tabUsers' };
-        const containerMap = { ext:'extContainer', capa:'capaContainer', audit:'auditContainer', activity:'activityContainer', settings:'settingsContainer', users:'usersContainer' };
+        if ((t === 'activity' || t === 'users') && !(currentUser && currentUser.role === 'admin')) t = 'ext';
+        const tabs = ['ext','capa','audit','complaints','activity','users'];
+        const idMap = { ext:'tabExt', capa:'tabCapa', audit:'tabAudit', complaints:'tabComplaints', activity:'tabActivity', users:'tabUsers' };
+        const containerMap = { ext:'extContainer', capa:'capaContainer', audit:'auditContainer', complaints:'complaintsContainer', activity:'activityContainer', users:'usersContainer' };
+        const adminOnlyTabs = ['activity', 'users'];
         tabs.forEach(id => {
-            document.getElementById(idMap[id]).className = t === id ? 'admin-tab-btn active' : 'admin-tab-btn';
+            const base = t === id ? 'admin-tab-btn active' : 'admin-tab-btn';
+            document.getElementById(idMap[id]).className = adminOnlyTabs.includes(id) ? base + ' admin-only' : base;
             document.getElementById(containerMap[id]).style.display = t === id ? 'block' : 'none';
         });
         if (t === 'users') renderUsers();
         if (t === 'capa') { populateFactorySelects(); renderCAPA(); }
         if (t === 'activity') renderActivityLog();
+        if (t === 'complaints') renderComplaints();
     }
     function renderAdminSection() { populateFactorySelects(); renderExtinguisherList(); }
 
@@ -1781,81 +1928,169 @@
       renderCAPA(); updateBell();
     }
 
-    // A tiny 1x1 red PNG, used purely to test whether Drive uploads succeed —
-    // isolates Drive/authorization problems from general cloud sync problems.
-    const TEST_PIXEL_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
-    async function testDriveUpload() {
-      const status = document.getElementById('testCloudStatus');
-      const btn = document.getElementById('testDriveBtn');
-      if (!CLOUD_SYNC_ENABLED) { status.style.color = 'var(--danger)'; status.innerText = 'Cloud sync isn\'t configured.'; return; }
-      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Uploading a test image to Drive...';
-      const url = await uploadImageToCloud(TEST_PIXEL_BASE64, 'portal-test-pixel.png', 'image/png');
-      if (url) {
-        status.style.color = 'var(--accent)';
-        status.innerHTML = `Drive upload works! <a href="${url}" target="_blank" rel="noopener">View test file</a>. Gallery/Policy uploads should work too.`;
-      } else {
-        status.style.color = 'var(--danger)';
-        status.innerText = 'Drive upload FAILED — this is likely why Gallery/Policy uploads aren\'t showing. Open the Apps Script editor, run any function once manually (e.g. getAllData) via the Run button, approve the Drive permission when prompted, then redeploy and try again.';
-      }
-      btn.disabled = false;
+    // --- Complaint / Suggestion Box ---
+    // Data shape: { id, type:'Complaint'|'Suggestion', name, date, location, text,
+    //   status:'Pending'|'Ongoing'|'Done', targetDate, responsible }
+    // Anyone (even logged out) can submit via the hover widget on every page;
+    // Name is optional so genuinely anonymous safety reports are still possible.
+    // Viewing the register (Admin → Complaints/Suggestions) requires login, same
+    // as every other admin-area tab. Status / target date / responsible person
+    // are only editable by Safety Officer or Admin; delete and email are Admin-only.
+    function complaintTypeBadge(type) {
+      const isComplaint = type !== 'Suggestion';
+      return `<span class="status-pill" style="background:${isComplaint ? 'rgba(229,72,77,.14)' : 'rgba(18,183,106,.14)'};color:${isComplaint ? 'var(--danger)' : '#0d8a51'}">${isComplaint ? '⚠️ Complaint' : '💡 Suggestion'}</span>`;
     }
-
-    async function testCloudConnection() {
-      const status = document.getElementById('testCloudStatus');
-      const btn = document.getElementById('testCloudBtn');
-      if (!CLOUD_SYNC_ENABLED) {
-        status.style.color = 'var(--danger)';
-        status.innerText = 'GAS_URL is not set in this HTML file — cloud sync was never configured.';
-        return;
-      }
-      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Testing...';
-      try {
-        const res = await fetch(GAS_URL + '?action=getAll&t=' + Date.now());
-        const json = await res.json().catch(() => null);
-        if (json && json.status === 'ok') {
-          const data = json.data || {};
-          const keys = Object.keys(data);
-          const summary = keys.map(k => {
-            const v = data[k];
-            const count = Array.isArray(v) ? v.length : (v && typeof v === 'object' ? Object.keys(v).length : (v ? 1 : 0));
-            return `${k} (${count})`;
-          }).join(', ');
-          status.style.color = 'var(--accent)';
-          status.innerText = `Connected. Tabs & item counts: ${summary || '(none yet)'}.`;
-          console.log('Cloud data snapshot:', data); // full detail in the browser console (F12) if needed
-        } else {
-          status.style.color = 'var(--danger)';
-          status.innerText = 'Reached the Apps Script but it returned an error: ' + ((json && json.message) || 'unknown — check the Apps Script deployment logs.');
-        }
-      } catch (err) {
-        status.style.color = 'var(--danger)';
-        status.innerText = 'Could not reach the Apps Script URL at all. Check that it\'s deployed as "Anyone" access and the URL in GAS_URL is correct and current.';
-      }
-      btn.disabled = false;
+    function complaintStatusInfo(item) {
+      if (item.status === 'Done') return { label: 'Done', cls: 'status-ok' };
+      if (item.status === 'Ongoing') return { label: 'Ongoing', cls: 'status-due-soon' };
+      if (item.targetDate && new Date(item.targetDate) < new Date(new Date().toDateString())) return { label: 'Pending (Overdue)', cls: 'status-overdue' };
+      return { label: 'Pending', cls: '' };
     }
+    function toggleComplaintBox() {
+      const box = document.getElementById('complaintBox');
+      const opening = box.style.display !== 'flex';
+      box.style.display = opening ? 'flex' : 'none';
+      if (opening) {
+        const dateEl = document.getElementById('cmpDate');
+        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+        const nameEl = document.getElementById('cmpName');
+        if (nameEl && !nameEl.value && currentUser) nameEl.value = currentUser.username;
+      }
+    }
+    function goToComplaintsAdmin() {
+      document.getElementById('complaintBox').style.display = 'none';
+      if (!currentUser) { showLogin(); return; }
+      navTo('adminSection');
+      switchAdminTab('complaints');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function addComplaint(e) {
+      e.preventDefault();
+      const obj = {
+        id: Date.now(),
+        type: document.getElementById('cmpType').value || 'Complaint',
+        name: document.getElementById('cmpName').value.trim() || 'Anonymous',
+        date: document.getElementById('cmpDate').value || new Date().toISOString().split('T')[0],
+        location: document.getElementById('cmpLocation').value.trim(),
+        text: document.getElementById('cmpText').value.trim(),
+        status: 'Pending',
+        targetDate: '',
+        responsible: ''
+      };
+      const list = LocalDB.get('complaints', []);
+      list.unshift(obj);
+      LocalDB.set('complaints', list);
+      logActivity(`${obj.type} submitted`, `${obj.text.substring(0,50)} (${obj.location})`);
+      alert('Thank you — your ' + obj.type.toLowerCase() + ' has been submitted.');
+      e.target.reset();
+      document.getElementById('cmpDate').value = new Date().toISOString().split('T')[0];
+      renderComplaints();
+      updateBell();
+    }
+    function renderComplaints() {
+      const tbody = document.querySelector('#complaintsTable tbody');
+      if (!tbody) return;
+      const list = LocalDB.get('complaints', []);
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      const isOfficerUp = isAdmin || (currentUser && currentUser.role === 'safetyofficer');
+      tbody.innerHTML = list.map(x => {
+        const st = complaintStatusInfo(x);
+        const statusCell = isOfficerUp ? `
+          <select onchange="updateComplaintField(${x.id},'status',this.value)" style="width:auto;padding:4px 8px;font-size:12px">
+            <option ${x.status==='Pending'?'selected':''}>Pending</option>
+            <option ${x.status==='Ongoing'?'selected':''}>Ongoing</option>
+            <option ${x.status==='Done'?'selected':''}>Done</option>
+          </select>` : `<span class="status-pill ${st.cls}">${st.label}</span>`;
+        const targetCell = isOfficerUp
+          ? `<input type="date" value="${x.targetDate||''}" onchange="updateComplaintField(${x.id},'targetDate',this.value)" style="width:145px;padding:6px 8px;font-size:12px">`
+          : (x.targetDate || '-');
+        const respCell = isOfficerUp
+          ? `<input type="text" value="${escapeHtml(x.responsible||'')}" placeholder="Assign to..." onchange="updateComplaintField(${x.id},'responsible',this.value)" style="width:150px;padding:6px 8px;font-size:12px">`
+          : escapeHtml(x.responsible || '-');
+        return `<tr class="${st.cls}">
+          <td>${complaintTypeBadge(x.type)}</td>
+          <td>${escapeHtml(x.name)}</td>
+          <td>${x.date||'-'}</td>
+          <td>${escapeHtml(x.location||'-')}</td>
+          <td style="max-width:260px" title="${escapeHtml(x.text)}">${escapeHtml((x.text||'').length>80 ? x.text.substring(0,80)+'…' : (x.text||''))}</td>
+          <td>${statusCell}</td>
+          <td>${targetCell}</td>
+          <td>${respCell}</td>
+          <td style="white-space:nowrap">
+            <button class="btn-action btn-sm admin-only" onclick="openEmailComplaint(${x.id})">✉ Mail</button>
+            <button class="btn-danger btn-sm admin-only" onclick="deleteComplaint(${x.id})">Del</button>
+          </td>
+        </tr>`;
+      }).join('') || `<tr><td colspan="9" style="text-align:center;color:grey">No complaints or suggestions submitted yet.</td></tr>`;
+    }
+    function updateComplaintField(id, field, value) {
+      const list = LocalDB.get('complaints', []);
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+      item[field] = value;
+      LocalDB.set('complaints', list);
+      logActivity('Complaint/Suggestion updated', `${field} → ${value}`);
+      renderComplaints();
+      updateBell();
+    }
+    function deleteComplaint(id) {
+      if (!confirm('Delete this complaint/suggestion record? This cannot be undone.')) return;
+      LocalDB.set('complaints', LocalDB.get('complaints', []).filter(x => x.id !== id));
+      logActivity('Complaint/Suggestion deleted', '');
+      renderComplaints();
+      updateBell();
+    }
+    function openEmailComplaint(id) {
+      const item = LocalDB.get('complaints', []).find(x => x.id === id);
+      if (!item) return;
+      emailingComplaintId = id;
+      document.getElementById('emailComplaintPreview').innerHTML =
+        `${complaintTypeBadge(item.type)} from <b>${escapeHtml(item.name)}</b> at <b>${escapeHtml(item.location||'-')}</b> on ${item.date||'-'}`;
+      document.getElementById('emailComplaintTo').value = (item.responsible && item.responsible.includes('@')) ? item.responsible : '';
+      document.getElementById('emailComplaintSubject').value = `TARSONS HSE Portal: ${item.type} — Action Required`;
+      document.getElementById('emailComplaintBody').value =
+`A ${item.type.toLowerCase()} has been logged on the TARSONS HSE Portal and needs your attention.
 
-    async function sendTestAlertEmail() {
-      const btn = document.getElementById('testEmailBtn');
-      const status = document.getElementById('testEmailStatus');
-      if (!CLOUD_SYNC_ENABLED) { status.innerText = 'Cloud sync isn\'t configured (GAS_URL not set) — email is sent from the Apps Script backend, so this needs cloud sync set up first.'; status.style.color = 'var(--danger)'; return; }
-      btn.disabled = true; status.style.color = 'var(--muted)'; status.innerText = 'Sending...';
+Reported by: ${item.name}
+Date: ${item.date || '-'}
+Location: ${item.location || '-'}
+Current Status: ${item.status}
+Target Date: ${item.targetDate || 'Not yet set'}
+
+Details:
+${item.text}
+
+Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the status once actioned.`;
+      document.getElementById('emailComplaintModal').style.display = 'flex';
+    }
+    async function sendComplaintEmail() {
+      const to = document.getElementById('emailComplaintTo').value.trim();
+      if (!to) { alert('Please enter a recipient email address.'); return; }
+      const subject = document.getElementById('emailComplaintSubject').value.trim();
+      const body = document.getElementById('emailComplaintBody').value;
+      const btn = document.querySelector('#emailComplaintBox button.primary');
+      if (btn) { btn.disabled = true; btn.innerText = 'Sending...'; }
       try {
         const res = await fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'testEmail' })
+          body: JSON.stringify({ action: 'sendMail', to, subject, body })
         });
         const json = await res.json().catch(() => null);
         if (json && json.status === 'ok') {
-          status.style.color = 'var(--accent)'; status.innerText = 'Sent! Check your inbox (and spam folder).';
+          logActivity('Complaint/Suggestion emailed', `To ${to}`);
+          alert('Email sent to ' + to);
+          document.getElementById('emailComplaintModal').style.display = 'none';
         } else {
-          status.style.color = 'var(--danger)'; status.innerText = 'Failed: ' + ((json && json.message) || 'unknown error — check the Apps Script deployment.');
+          alert('Could not send email: ' + ((json && json.message) || 'unknown error') + '\n\nMake sure Code.gs has been redeployed with the sendMail action.');
         }
       } catch (err) {
-        status.style.color = 'var(--danger)'; status.innerText = 'Failed to reach the Apps Script backend.';
+        console.error(err);
+        alert('Could not reach the mail service — check your connection or the Apps Script deployment.');
       }
-      btn.disabled = false;
+      if (btn) { btn.disabled = false; btn.innerText = 'Send Email'; }
     }
+
     function exportTableToExcel(tableId, filename) {
       const table = document.getElementById(tableId);
       if (!table || typeof XLSX === 'undefined') { alert('Export library not loaded — check your internet connection.'); return; }
@@ -1923,7 +2158,7 @@
             const st = extinguisherStatus(x.due);
             return `<tr class="${st.cls}"><td>${x.factory}</td><td>${x.extID}</td><td>${x.type}</td><td>${x.cap}</td><td>${x.due||'-'}</td>
             <td><span class="status-pill ${st.cls}">${st.label}</span></td>
-            <td class="admin-only"><button class="ghost-dark btn-sm" onclick="showExtinguisherQR('${escapeHtml(x.factory)}','${escapeHtml(x.extID)}')">QR</button></td>
+            <td><button class="ghost-dark btn-sm" onclick="showExtinguisherQR('${escapeHtml(x.factory)}','${escapeHtml(x.extID)}')">QR</button></td>
             <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteExtinguisher(${x.id})">Del</button></td></tr>`;
         }).join('') || '<tr><td colspan="8" style="text-align:center;color:grey">No extinguishers registered yet.</td></tr>';
     }
@@ -2049,10 +2284,10 @@
                 <td>${p.qty}</td>
                 <td>${escapeHtml(p.unit)}</td>
                 <td><span class="status-badge ${p.qty <= p.reorder ? 'status-expired' : 'status-safe'}">${p.qty <= p.reorder ? 'Low' : 'OK'}</span></td>
-                <td class="admin-only">
-                    <button class="btn-action btn-sm" onclick="initiatePPEIssue(${p.id})">Issue</button>
-                    <button class="btn-action btn-sm" onclick="restockPPEItem(${p.id})">+ Stock</button>
-                    <button class="btn-danger btn-sm" onclick="deletePPEItem(${p.id})">Delete</button>
+                <td>
+                    <button class="btn-action btn-sm officer-only" onclick="initiatePPEIssue(${p.id})">Issue</button>
+                    <button class="btn-action btn-sm officer-only" onclick="restockPPEItem(${p.id})">+ Stock</button>
+                    <button class="btn-danger btn-sm admin-only" onclick="deletePPEItem(${p.id})">Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -2222,7 +2457,7 @@
             <tr><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.company)}</td><td>${escapeHtml(v.mobile||'')}</td>
               <td>${escapeHtml(v.time)}</td><td>${escapeHtml(v.brief||'No')}</td><td>${escapeHtml(v.ppe||'')}</td><td>${escapeHtml(v.factory)}</td>
               <td><button class="ghost-dark btn-sm" onclick="reprintVisitorCertificate(${v.id})">🖨️ Certificate</button>
-              <button class="btn-danger btn-sm" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
+              <button class="btn-danger btn-sm admin-only" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
         `).join('') || '<tr><td colspan="8" style="text-align:center;color:grey">No visitors logged yet.</td></tr>';
     }
     function reprintVisitorCertificate(id) {
@@ -2376,9 +2611,9 @@
         if (keyword) list = list.filter(x => [x.requester, x.location, x.type].some(v => (v||'').toLowerCase().includes(keyword)));
         document.querySelector('#ptwTable tbody').innerHTML = list.map(p => `
             <tr><td>${escapeHtml(p.id)}</td><td>${escapeHtml(p.date)}</td><td>${escapeHtml(p.type)}</td><td>${escapeHtml(p.factory)}</td><td>${escapeHtml(p.location||'')}</td><td>${escapeHtml(p.requester||'')}</td><td>${escapeHtml(p.status||'Pending')}</td>
-              <td class="admin-only"><button class="btn-action btn-sm" onclick="updatePTWStatus('${p.id}','Approved')">Approve</button>
-              <button class="btn-danger btn-sm" onclick="updatePTWStatus('${p.id}','Rejected')">Reject</button>
-              <button class="btn-danger btn-sm" onclick="deletePTW('${p.id}')" style="margin-left:4px">X</button></td></tr>
+              <td><button class="btn-action btn-sm officer-only" onclick="updatePTWStatus('${p.id}','Approved')">Approve</button>
+              <button class="btn-danger btn-sm officer-only" onclick="updatePTWStatus('${p.id}','Rejected')">Reject</button>
+              <button class="btn-danger btn-sm admin-only" onclick="deletePTW('${p.id}')" style="margin-left:4px">X</button></td></tr>
         `).join('');
         refreshStats();
     }
@@ -2541,7 +2776,8 @@
             legal: LocalDB.get('legal'), extinguishers: LocalDB.get('extinguishers'), modules: LocalDB.get('modules'), 
             records: LocalDB.get('records'), gallery: LocalDB.get('gallery'), policies: LocalDB.get('policies'), 
             users: LocalDB.get('users'), audits: LocalDB.get('audits'),
-            hira: LocalDB.get('hira'), waste: LocalDB.get('waste'), ppe_logs: LocalDB.get('ppe_logs')
+            hira: LocalDB.get('hira'), waste: LocalDB.get('waste'), ppe_logs: LocalDB.get('ppe_logs'),
+            complaints: LocalDB.get('complaints'), blog: LocalDB.get('blog')
         };
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
@@ -2748,7 +2984,86 @@
     
     window.delPhoto = async function(id){ if(!confirm('Delete?')) return; LocalDB.set('gallery', LocalDB.get('gallery').filter(x=>x.id!==id)); logActivity('Gallery photo deleted', ''); renderGallery();
     }
-    
+
+    // --- EHS Blog / News ---
+    // Data shape: { id, title, content, photo, author, date }. Anyone can read;
+    // only Admin can publish or delete (enforced the same way as Gallery/Policies
+    // — the "Publish New Post" form and delete controls sit behind .admin-only).
+    function renderBlog(){
+      const posts = LocalDB.get('blog', []).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
+      const grid = document.getElementById('blogGrid');
+      if (!grid) return;
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      grid.innerHTML = posts.map(p => {
+        const img = p.photo
+          ? `<img class="blog-card-img" src="${driveImageSrc(p.photo)}" data-fallback="${driveImageFallbackSrc(p.photo)}" onerror="if(this.dataset.fallback && this.src!==this.dataset.fallback){this.src=this.dataset.fallback}" loading="lazy">`
+          : `<div class="blog-card-noimg">📰</div>`;
+        const excerpt = (p.content||'').length > 120 ? escapeHtml(p.content.substring(0,120)) + '…' : escapeHtml(p.content||'');
+        return `<div class="blog-card" onclick="openBlogPost(${p.id})">
+          ${isAdmin ? `<div class="blog-del" onclick="event.stopPropagation();deleteBlogPost(${p.id})">X</div>` : ''}
+          ${img}
+          <div class="blog-card-body">
+            <div class="blog-card-title">${escapeHtml(p.title)}</div>
+            <div class="blog-card-meta">${escapeHtml(p.author||'HSE Team')} · ${p.date ? new Date(p.date).toLocaleDateString() : ''}</div>
+            <div class="blog-card-excerpt">${excerpt}</div>
+            <div class="blog-card-readmore">Read More →</div>
+          </div>
+        </div>`;
+      }).join('') || '<p style="color:grey;grid-column:1/-1;text-align:center;">No posts published yet.</p>';
+    }
+    window.addBlogPost = async function(e){
+      e.preventDefault();
+      const title = document.getElementById('blogTitle').value.trim();
+      const content = document.getElementById('blogContent').value.trim();
+      const file = document.getElementById('blogPhoto').files[0];
+      const saveBtn = e.target.querySelector('button[type=submit]');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Publishing...'; }
+      try {
+        let photo = '';
+        if (file) {
+          const base64 = await readFileAsDataURL(file);
+          const driveUrl = await uploadImageToCloud(base64, file.name, file.type);
+          if (driveUrl) {
+            photo = driveUrl;
+          } else {
+            if (base64.length > 50000) {
+              alert('Cloud storage isn\'t available right now, so this photo is being saved to this browser only (not shared with other users) because it\'s too large for the spreadsheet. Set up cloud sync to share large photos.');
+            }
+            photo = base64;
+          }
+        }
+        const posts = LocalDB.get('blog', []);
+        posts.push({ id: Date.now(), title, content, photo, author: (currentUser && currentUser.username) || 'HSE Team', date: new Date().toISOString() });
+        LocalDB.set('blog', posts);
+        logActivity('Blog post published', title);
+      } catch(err){ console.error(err); alert('Publish failed — check your connection and try again.'); }
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = 'Publish Post'; }
+      e.target.reset();
+      renderBlog();
+    };
+    function openBlogPost(id){
+      const post = LocalDB.get('blog', []).find(p => p.id === id);
+      if (!post) return;
+      openBlogId = id;
+      const imgEl = document.getElementById('blogReadImg');
+      if (post.photo) { imgEl.src = driveImageSrc(post.photo); imgEl.style.display = 'block'; }
+      else { imgEl.style.display = 'none'; }
+      document.getElementById('blogReadTitle').innerText = post.title;
+      document.getElementById('blogReadMeta').innerText = `${post.author || 'HSE Team'} · ${post.date ? new Date(post.date).toLocaleString() : ''}`;
+      document.getElementById('blogReadContent').innerText = post.content;
+      document.getElementById('blogReadModal').style.display = 'flex';
+    }
+    function deleteBlogPost(id){
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+      LocalDB.set('blog', LocalDB.get('blog', []).filter(p => p.id !== id));
+      logActivity('Blog post deleted', '');
+      document.getElementById('blogReadModal').style.display = 'none';
+      renderBlog();
+    }
+    function deleteBlogPostFromModal(){
+      if (openBlogId) deleteBlogPost(openBlogId);
+    }
+
     function toggleAI() {
       const box = document.getElementById('aiAssistantBox');
       box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
@@ -2784,7 +3099,7 @@
 
       // Greeting
       if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(lower)) {
-        return `Hi${currentUser ? ' ' + currentUser.username : ''}! Ask me about incidents, PTW, HIRA, PPE stock, extinguishers, legal compliance, CAPA, training, or contacts — I'll pull the current numbers for you.`;
+        return `Hi${currentUser ? ' ' + currentUser.username : ''}! Ask me about incidents, PTW, HIRA, PPE stock, extinguishers, legal compliance, CAPA, training, contacts, complaints/suggestions, or the blog/news page — I'll pull the current numbers for you.`;
       }
 
       // Overall safety snapshot
@@ -2884,6 +3199,19 @@
         return `${pols.length} policy document(s) uploaded. Click any tile in the Policies tab to open it.`;
       }
 
+      // Complaints / Suggestions
+      if (lower.includes('complaint') || lower.includes('suggestion') || lower.includes('feedback')) {
+        const list = LocalDB.get('complaints', []);
+        const pending = list.filter(x => x.status === 'Pending').length;
+        return `${list.length} complaint(s)/suggestion(s) logged, ${pending} still pending review. Use the 📢 button in the corner of any page to submit one, or check Admin → Complaints/Suggestions for the full register.`;
+      }
+
+      // Blog / News
+      if (lower.includes('blog') || lower.includes('news') || lower.includes('announcement')) {
+        const posts = LocalDB.get('blog', []);
+        return `${posts.length} post(s) published on the EHS Blog/News page. Anyone can read them; only Admins can publish or delete a post.`;
+      }
+
       // Contacts — now reads the dynamic list instead of a hardcoded name
       if (lower.includes('contact') || lower.includes('phone') || lower.includes('call') || lower.includes('emergency number')) {
         const contacts = LocalDB.get('contacts', null) || DEFAULT_CONTACTS;
@@ -2891,7 +3219,7 @@
         return `Emergency and Factory ERT contacts are in the Contact tab (☎ icons are tap/click-to-call). ${ert.length} ERT member(s) currently listed across all factories.`;
       }
 
-      return "I can answer questions about incidents, near misses, PTW, HIRA, waste, PPE, extinguishers, legal compliance, CAPA, training, gallery, policies, or contacts — try asking something like \"what's overdue\" or \"how many open PTWs\".";
+      return "I can answer questions about incidents, near misses, PTW, HIRA, waste, PPE, extinguishers, legal compliance, CAPA, training, gallery, policies, contacts, complaints/suggestions, or the blog/news page — try asking something like \"what's overdue\" or \"how many open PTWs\".";
     }
 
     function appendMessage(sender, text) {
@@ -2908,7 +3236,6 @@
     window.showLogin = showLogin;
     window.navTo = navTo;
     window.requireAuthAndGo = requireAuthAndGo;
-    window.requireAdminAndGo = requireAdminAndGo;
     window.openNotifications = openNotifications;
     window.clearBellNotifications = clearBellNotifications;
     window.addNotice = addNotice;
@@ -2970,12 +3297,19 @@
     window.deleteCAPA = deleteCAPA;
     window.renderCAPA = renderCAPA;
     window.renderActivityLog = renderActivityLog;
-    window.sendTestAlertEmail = sendTestAlertEmail;
-    window.testCloudConnection = testCloudConnection;
-    window.testDriveUpload = testDriveUpload;
     window.exportTableToExcel = exportTableToExcel;
     window.showExtinguisherQR = showExtinguisherQR;
     window.toggleTheme = toggleTheme;
+    window.toggleComplaintBox = toggleComplaintBox;
+    window.addComplaint = addComplaint;
+    window.goToComplaintsAdmin = goToComplaintsAdmin;
+    window.updateComplaintField = updateComplaintField;
+    window.deleteComplaint = deleteComplaint;
+    window.openEmailComplaint = openEmailComplaint;
+    window.sendComplaintEmail = sendComplaintEmail;
+    window.openBlogPost = openBlogPost;
+    window.deleteBlogPost = deleteBlogPost;
+    window.deleteBlogPostFromModal = deleteBlogPostFromModal;
   </script>
   <script>
     // Installable/offline support — only works when served over http(s), not opened as a local file:// path.
