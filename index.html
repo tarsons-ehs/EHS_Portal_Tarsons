@@ -176,6 +176,10 @@
   .factory-title{font-weight:800;color:var(--accent-3);margin-bottom:10px;border-bottom:2px solid var(--accent-2);padding-bottom:6px;font-size:15px}
   .stat-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-dark)}
   .stat-row strong{color:var(--accent)}
+  .factory-safedays{text-align:center;background:linear-gradient(135deg,rgba(18,183,106,0.1), rgba(11,125,191,0.08));border-radius:10px;padding:8px 6px;margin-bottom:10px}
+  .factory-safedays .small{font-size:10.5px}
+  .factory-safedays .big{font-size:24px}
+  .factory-section-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;border-top:1px dashed var(--border);padding-top:8px}
 
   /* ---------- Forms ---------- */
   form .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -230,13 +234,13 @@
   tbody tr:hover{background:rgba(18,183,106,.05)}
 
   /* ---------- Modals ---------- */
-  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal, #qrModal, #emailComplaintModal, #blogReadModal{
+  #loginOverlay, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal, #notificationModal, #ppeIssueModal, #qrModal, #emailComplaintModal, #blogReadModal, #mailVisitorPassModal{
     position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(4,10,20,0.72);display:none;
     align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);
     animation:overlayIn .18s ease both;padding:16px;
   }
   @keyframes overlayIn{from{opacity:0}to{opacity:1}}
-  #loginBox, #siteStatsBox, #noticeBox, #ptwBox, #notificationBox, #ppeIssueBox, #emailComplaintBox, #blogReadBox{
+  #loginBox, #siteStatsBox, #noticeBox, #ptwBox, #notificationBox, #ppeIssueBox, #emailComplaintBox, #blogReadBox, #mailVisitorPassBox{
     width:100%;max-width:500px;background:white;padding:22px;border-radius:18px;color:var(--text-dark);
     max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .22s cubic-bezier(.2,.9,.3,1.2) both;
   }
@@ -417,7 +421,7 @@
     <nav id="desktopNav" class="nav-strip">
       <ul>
         <li><a href="#" data-nav="home" onclick="navTo('home')">🏠 Home</a></li>
-        <li><a href="#" data-nav="dashboard" onclick="requireAuthAndGo('dashboard')">🚨 Incidents</a></li>
+        <li><a href="#" data-nav="dashboard" onclick="requireAuthAndGo('dashboard')">🚨 Incidents/Accidents</a></li>
         <li><a href="#" data-nav="hira" onclick="requireAuthAndGo('hira')">⚠️ HIRA</a></li>
         <li><a href="#" data-nav="waste" onclick="requireAuthAndGo('waste')">♻️ Waste Mgmt</a></li>
         <li><a href="#" data-nav="ppe" onclick="requireAuthAndGo('ppe')">🦺 PPE</a></li>
@@ -448,7 +452,7 @@
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <h2>HSE Overview</h2>
+              <h2>Company-Wide HSE Overview</h2>
               <div class="admin-only"><button class="btn-action btn-sm" onclick="openSiteStats()">Update Factory Stats</button></div>
             </div>
             
@@ -460,6 +464,10 @@
               <div class="tile" title="Near Miss + Unsafe Condition reports logged"><div class="small">Near Miss / Unsafe</div><div class="big" id="nearMissTile">0</div></div>
             </div>
             
+            <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <h3 style="margin:0">🏭 Unit-wise HSE Performance</h3>
+              <p class="small" style="margin:0;color:var(--muted);text-transform:none;font-weight:500;">Safe days, incidents/accidents and reports, broken down by factory/unit.</p>
+            </div>
             <div id="factoriesContainer" class="factory-grid"></div>
             
             <div id="expiryAlertSection"></div>
@@ -524,11 +532,14 @@
     <section id="waste" style="display:none" class="container">
       <div class="card">
         <h2>Waste Management Log</h2>
-        <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
-            <div class="tile" style="flex:1"><div class="small">Current Hazardous Stock (Kg)</div><div class="big" id="wasteHazTotal">0</div></div>
-            <div class="tile" style="flex:1"><div class="small">Current Recyclable Stock (Kg)</div><div class="big" id="wasteRecTotal">0</div></div>
+        <h3 style="margin:0 0 4px">Current Hazardous Waste Stock (On-site, Awaiting Disposal)</h3>
+        <div style="display:flex; gap:15px; margin-bottom:10px; flex-wrap:wrap;">
+            <div class="tile" style="flex:1;min-width:150px"><div class="small">5.1 – Used/Spent Oil (Kg)</div><div class="big" id="wasteHaz51Total">0</div></div>
+            <div class="tile" style="flex:1;min-width:150px"><div class="small">5.2 – Oily Waste/Residue (Kg)</div><div class="big" id="wasteHaz52Total">0</div></div>
+            <div class="tile" style="flex:1;min-width:150px"><div class="small">33.1 – Container Decon. Residue (Kg)</div><div class="big" id="wasteHaz331Total">0</div></div>
+            <div class="tile" style="flex:1;min-width:150px"><div class="small">General Waste (Recyclable) (Kg)</div><div class="big" id="wasteRecTotal">0</div></div>
         </div>
-        <p class="small" style="margin:-6px 0 12px;color:var(--muted);text-transform:none;font-weight:500;">Stock figures are net totals: every "Stored" entry adds to stock, every "Disposed" entry subtracts from it.</p>
+        <p class="small" style="margin:-2px 0 12px;color:var(--muted);text-transform:none;font-weight:500;">Stock figures are net totals: every "Generated/Stored" entry adds to stock, every "Disposed" entry subtracts from it. Categories 5.1, 5.2 and 33.1 are hazardous waste tracked separately per CPCB Schedule I; every other waste stream is treated as general recyclable waste.</p>
 
         <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
           <h4>Log Waste Entry</h4>
@@ -539,17 +550,16 @@
             </div>
             <div class="two-cols" style="margin-top:5px">
               <select id="wasteEntryType" required>
-                <option value="">Stored or Disposed?</option>
-                <option value="Stored">Stored (adds to stock)</option>
+                <option value="">Generated/Stored or Disposed?</option>
+                <option value="Stored">Generated / Stored (adds to stock)</option>
                 <option value="Disposed">Disposed (removes from stock)</option>
               </select>
               <select id="wasteType" required>
-                <option value="">Select Waste Type</option>
-                <option value="Hazardous">Hazardous (Chemical/Sludge)</option>
-                <option value="Plastic">Plastic / Packaging</option>
-                <option value="Bio-Medical">Bio-Medical</option>
-                <option value="E-Waste">E-Waste</option>
-                <option value="General">General/Canteen</option>
+                <option value="">Select Waste Category</option>
+                <option value="5.1">5.1 – Used/Spent Oil (Hazardous)</option>
+                <option value="5.2">5.2 – Wastes/Residues Containing Oil (Hazardous)</option>
+                <option value="33.1">33.1 – Chemical Residue from Container Decontamination (Hazardous)</option>
+                <option value="General">General Waste (Recyclable)</option>
               </select>
             </div>
             <div class="two-cols" style="margin-top:5px">
@@ -561,7 +571,7 @@
         </div>
 
         <div style="overflow-x:auto">
-          <table id="wasteTable"><thead><tr><th>Date</th><th>Factory</th><th>Type</th><th>Entry</th><th>Qty (Kg)</th><th>Location / Vendor</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
+          <table id="wasteTable"><thead><tr><th>Date</th><th>Factory</th><th>Category</th><th>Entry</th><th>Qty (Kg)</th><th>Location / Vendor</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </section>
@@ -734,28 +744,35 @@
   
     <section id="dashboard" style="display:none" class="container">
       <div class="card">
-        <h2>Incident Register</h2>
+        <h2>Incident / Accident Register</h2>
 
         <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid var(--accent);">
-          <h4>Report / Add Incident, Near Miss, or Unsafe Condition</h4>
+          <h4>Report / Add Incident, Accident, Near Miss, or Unsafe Condition</h4>
           <form id="incForm" onsubmit="submitIncident(event)">
-            <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Location" required></div>
+            <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Specific Location (e.g. Shop Floor 2)" required></div>
              <div class="two-cols" style="margin-top:10px">
-               <select id="rType" required>
+               <select id="rFactory" required></select>
+               <select id="rType" required onchange="toggleInjuredField()">
                  <option value="Incident">Incident</option>
+                 <option value="Accident">Accident</option>
                  <option value="Near Miss">Near Miss</option>
                  <option value="Unsafe Condition">Unsafe Condition</option>
                </select>
-               <select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select>
              </div>
-             <input id="rDate" type="datetime-local" required style="margin-top:10px">
+             <div class="two-cols" style="margin-top:10px">
+               <select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select>
+               <input id="rDate" type="datetime-local" required>
+             </div>
+             <div id="rInjuredWrap" style="margin-top:10px">
+               <input id="rInjured" placeholder="Injured Person Name (optional)">
+             </div>
             <textarea id="rDesc" placeholder="Description..." style="margin-top:10px" required></textarea>
             <button type="submit" class="primary" style="margin-top:10px">Submit</button>
           </form>
         </div>
 
         <div style="overflow-x:auto; margin-top:10px">
-          <table id="dashTable"><thead><tr><th>Date</th><th>Type</th><th>Reporter</th><th>Location</th><th>Severity</th><th>Description</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
+          <table id="dashTable"><thead><tr><th>Date</th><th>Type</th><th>Reporter</th><th>Unit/Factory</th><th>Location</th><th>Severity</th><th>Injured Person</th><th>Description</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
         </div>
         <button class="primary" onclick="exportJSON()" style="margin-top:15px">Export Data</button>
       </div>
@@ -819,12 +836,13 @@
               </div>
               <div class="two-cols" style="margin-top:6px">
                 <input id="visPersonMeet" placeholder="Person to Meet" required>
-                <input id="visMobile" placeholder="Visitor Mobile Number" required>
+                <input id="visPersonEmail" type="email" placeholder="Email of Person to Meet (optional)">
               </div>
               <div class="two-cols" style="margin-top:6px">
+                <input id="visMobile" placeholder="Visitor Mobile Number" required>
                 <select id="visFactory" required></select>
-                 <input id="visPurpose" placeholder="Purpose of Visit" required>
               </div>
+              <input id="visPurpose" placeholder="Purpose of Visit" required style="margin-top:6px">
               <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                 <label><input type="checkbox" id="visBrief"> Safety Briefing Given</label>
               </div>
@@ -846,7 +864,7 @@
           <h4 style="margin-top:6px">Visitor Log</h4>
           <div style="overflow-x:auto; max-height:240px;">
             <table id="visitorTable">
-              <thead><tr><th>Name</th><th>Company</th><th>Mobile</th><th>Issued Time</th><th>Brief</th><th>PPE</th><th>Factory</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Name</th><th>Company</th><th>Mobile</th><th>Person to Meet</th><th>Issued Time</th><th>Brief</th><th>PPE</th><th>Factory</th><th>Actions</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -897,7 +915,7 @@
         <div class="officer-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px; border-left:4px solid var(--accent-3);">
             <h4>Add Statutory Requirement</h4>
             <form onsubmit="addLegalItem(event)">
-                <div class="two-cols"><input id="legAct" placeholder="Act / Rule Name" required><input id="legLicense" placeholder="License / Permit Name" required></div>
+                <div class="two-cols"><input id="legAct" placeholder="Act / Rule Name" required><input id="legLicense" placeholder="License / Permit Number" required></div>
                 <div class="two-cols" style="margin-top:5px"><input id="legAuthority" placeholder="Regulatory Authority" required><select id="legFactorySelect" required></select></div>
                 <div class="two-cols" style="margin-top:5px">
                     <div><label class="small">Issue Date</label><input id="legIssue" type="date" required></div>
@@ -906,7 +924,7 @@
                 <button type="submit" class="primary" style="margin-top:10px">Add to Register</button>
             </form>
         </div>
-        <table id="legalTable"><thead><tr><th>Act/Rule</th><th>License</th><th>Factory</th><th>Issue date</th><th>Expiry</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
+        <table id="legalTable"><thead><tr><th>Act/Rule</th><th>License/Permit No.</th><th>Factory</th><th>Issue date</th><th>Expiry</th><th>Status</th><th class="admin-only">Action</th></tr></thead><tbody></tbody></table>
       </div>
     </section>
 
@@ -1147,6 +1165,27 @@
     </div>
   </div>
 
+  <div id="mailVisitorPassModal">
+    <div id="mailVisitorPassBox">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>Email Visitor Pass</h3>
+        <button class="ghost-dark btn-sm" onclick="document.getElementById('mailVisitorPassModal').style.display='none'">Close</button>
+      </div>
+      <p class="small" id="mailVisitorPassPreview" style="background:#f9f9f9;padding:10px;border-radius:8px;margin:10px 0 14px;color:var(--text-dark);text-transform:none;font-weight:500;"></p>
+      <label class="small">Send To (email address)</label>
+      <input id="mailVisitorPassTo" type="email" placeholder="host@tarsons.in" required style="margin:4px 0 10px">
+      <label class="small">Subject</label>
+      <input id="mailVisitorPassSubject" style="margin:4px 0 10px">
+      <label class="small">Message</label>
+      <textarea id="mailVisitorPassBody" style="min-height:140px;margin-top:4px"></textarea>
+      <p class="small" style="margin:8px 0 0;color:var(--muted);text-transform:none;font-weight:500;">A PDF copy of the visitor pass is generated and attached automatically.</p>
+      <div style="text-align:right;margin-top:14px">
+        <button class="ghost-dark" onclick="document.getElementById('mailVisitorPassModal').style.display='none'">Cancel</button>
+        <button class="primary" onclick="sendVisitorPassEmail()">Send Email</button>
+      </div>
+    </div>
+  </div>
+
   <div id="blogReadModal" onclick="if(event.target.id==='blogReadModal') this.style.display='none'">
     <div id="blogReadBox" style="width:92%;max-width:700px;padding:0;max-height:88vh;overflow-y:auto;position:relative;">
       <button class="ghost-dark btn-sm" style="position:absolute;right:12px;top:12px;z-index:2" onclick="document.getElementById('blogReadModal').style.display='none'">Close</button>
@@ -1353,6 +1392,7 @@
     let selectedPPEItemForIssue = null;
     let emailingComplaintId = null;
     let openBlogId = null;
+    let mailingVisitorId = null;
     
     // --- FORCE ALL FACTORIES TO SHOW ---
     const DEFAULT_FACTORIES = {
@@ -1445,7 +1485,7 @@
             safeCall(renderChart); safeCall(renderExpiryAlerts);
         }
         if (id === 'adminSection') { safeCall(populateFactorySelects); safeCall(renderAdminSection); safeCall(renderAudits); safeCall(renderComplaints); }
-        if (id === 'dashboard') safeCall(renderDashboard);
+        if (id === 'dashboard') { safeCall(populateFactorySelects); safeCall(renderDashboard); }
         if (id === 'ppe') { safeCall(renderPPE); safeCall(renderPPELogs); }
         if (id === 'legal') safeCall(renderLegalRegister);
         if (id === 'training') { safeCall(populateFactorySelects); safeCall(renderModules); safeCall(renderRecords); safeCall(renderVisitors); }
@@ -1607,12 +1647,38 @@
         const container = document.getElementById('factoriesContainer');
         // Ensure all factories are shown, even if they have 0 data
         const factoryNames = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
-        
+        const reports = LocalDB.get('reports', []);
+        const ptws = LocalDB.get('ptw', []);
+
+        // Same "Safe Days" baseline as the company-wide tile in refreshStats(),
+        // just filtered per factory so each unit gets its own count.
+        let trackingStart = LocalDB.get('trackingStart', null);
+        if (!trackingStart) { trackingStart = new Date().toISOString(); LocalDB.set('trackingStart', trackingStart); }
+
         container.innerHTML = factoryNames.map(name => {
             const facData = data[name] || { manpower: 0, fire: 0, firstAid: 0 };
+            const fReports = reports.filter(r => r.factory === name);
+            const fIncidents = fReports.filter(r => r.type === 'Incident' || r.type === 'Accident');
+            const fNearMiss = fReports.filter(r => r.type === 'Near Miss' || r.type === 'Unsafe Condition').length;
+            const fPTWOpen = ptws.filter(p => p.factory === name && p.status === 'Pending').length;
+
+            let lastIncidentDate = null;
+            fIncidents.forEach(r => {
+                const d = new Date(r.date);
+                if (!isNaN(d) && (!lastIncidentDate || d > lastIncidentDate)) lastIncidentDate = d;
+            });
+            const baseline = lastIncidentDate || new Date(trackingStart);
+            const safeDays = Math.max(0, Math.floor((new Date() - baseline) / (1000*60*60*24)));
+
             return `
             <div class="factory-card">
-                <div class="factory-title">${name}</div>
+                <div class="factory-title">🏭 ${name}</div>
+                <div class="factory-safedays"><div class="small">Safe Days</div><div class="big">${safeDays}</div></div>
+                <div class="stat-row"><span>Total Reports</span><strong>${fReports.length}</strong></div>
+                <div class="stat-row"><span>Incidents/Accidents</span><strong>${fIncidents.length}</strong></div>
+                <div class="stat-row"><span>Near Miss/Unsafe</span><strong>${fNearMiss}</strong></div>
+                <div class="stat-row"><span>Open PTWs</span><strong>${fPTWOpen}</strong></div>
+                <div class="factory-section-label">Site Info</div>
                 <div class="stat-row"><span>Manpower</span><strong>${facData.manpower}</strong></div>
                 <div class="stat-row"><span>FirstAid</span><strong>${facData.firstAid}</strong></div>
                 <div class="stat-row"><span>Extinguishers</span><strong>${facData.fire}</strong></div>
@@ -1627,10 +1693,10 @@
         document.getElementById('totalReports').innerText = reports.length;
         document.getElementById('openPTWs').innerText = ptws.filter(p => p.status === 'Pending').length;
 
-        // Only true "Incident" reports count toward safety metrics — Near Miss and
-        // Unsafe Condition are proactive/preventive reports, not actual injuries.
+        // "Incident" and "Accident" reports count toward safety metrics — Near Miss and
+        // Unsafe Condition are proactive/preventive reports, not actual injuries/damage.
         // Older records without a type are treated as Incident for backward compatibility.
-        const actualIncidents = reports.filter(r => !r.type || r.type === 'Incident');
+        const actualIncidents = reports.filter(r => !r.type || r.type === 'Incident' || r.type === 'Accident');
         const nearMissCount = reports.filter(r => r.type === 'Near Miss').length;
         const unsafeCount = reports.filter(r => r.type === 'Unsafe Condition').length;
         const nmTile = document.getElementById('nearMissTile');
@@ -1666,12 +1732,12 @@
         const sevColors = { Low: '#2ecc71', Medium: '#f5a524', High: '#ff6b6b', Fatal: '#8b0000' };
         // Same palette as reportTypeBadge() elsewhere in the app, so a report's
         // color means the same thing on the dashboard as it does in the register.
-        const typeKeys = ['Incident', 'Near Miss', 'Unsafe Condition'];
-        const typeColors = { 'Incident': '#0b7dbf', 'Near Miss': '#9a6300', 'Unsafe Condition': '#7a2fb0' };
+        const typeKeys = ['Incident', 'Accident', 'Near Miss', 'Unsafe Condition'];
+        const typeColors = { 'Incident': '#0b7dbf', 'Accident': '#d7263d', 'Near Miss': '#9a6300', 'Unsafe Condition': '#7a2fb0' };
         const now = new Date();
         const labels = [];
         const sevData = { Low: [], Medium: [], High: [], Fatal: [] };
-        const typeData = { 'Incident': [], 'Near Miss': [], 'Unsafe Condition': [] };
+        const typeData = { 'Incident': [], 'Accident': [], 'Near Miss': [], 'Unsafe Condition': [] };
         const totals = [];
 
         for (let i = monthsBack - 1; i >= 0; i--) {
@@ -1685,6 +1751,7 @@
             // Older records without a "type" field are treated as Incident, matching
             // the same backward-compatibility rule used in refreshStats().
             typeData['Incident'].push(monthReports.filter(r => !r.type || r.type === 'Incident').length);
+            typeData['Accident'].push(monthReports.filter(r => r.type === 'Accident').length);
             typeData['Near Miss'].push(monthReports.filter(r => r.type === 'Near Miss').length);
             typeData['Unsafe Condition'].push(monthReports.filter(r => r.type === 'Unsafe Condition').length);
             totals.push(monthReports.length);
@@ -1750,7 +1817,7 @@
     function populateFactorySelects() {
         const factories = ["Jangalpur", "Dhulagarh", "Panchla", "Amta"];
         const selectIds = [
-            'factorySelect', 'extFactory', 'extFilter', 'auditFactory', 
+            'factorySelect', 'extFactory', 'extFilter', 'auditFactory', 'rFactory',
             'visFactory', 'ptwFactory', 'ptwFactoryFilter', 'legFactorySelect', 'issueLocation',
             'hiraFactory', 'wasteFactory', 'capaFactory', 'contFactory'
         ];
@@ -2216,22 +2283,28 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
       const t = type || 'Incident';
       const styles = {
         'Incident': { bg: 'rgba(11,125,191,.14)', fg: '#0b7dbf' },
+        'Accident': { bg: 'rgba(215,38,61,.14)', fg: '#d7263d' },
         'Near Miss': { bg: 'rgba(245,165,36,.18)', fg: '#9a6300' },
         'Unsafe Condition': { bg: 'rgba(139,58,183,.16)', fg: '#7a2fb0' }
       };
       const s = styles[t] || { bg: 'rgba(0,0,0,.08)', fg: 'inherit' };
       return `<span class="status-pill" style="background:${s.bg};color:${s.fg}">${escapeHtml(t)}</span>`;
     }
+    function toggleInjuredField() {
+      const t = document.getElementById('rType').value;
+      const wrap = document.getElementById('rInjuredWrap');
+      if (wrap) wrap.style.display = (t === 'Incident' || t === 'Accident') ? 'block' : 'none';
+    }
     function renderDashboard() {
         const list = LocalDB.get('reports', []);
         document.querySelector('#dashTable tbody').innerHTML = list.map((r) => `
-            <tr><td>${r.date}</td><td>${reportTypeBadge(r.type)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.loc || '-')}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td>
+            <tr><td>${r.date}</td><td>${reportTypeBadge(r.type)}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.factory || '-')}</td><td>${escapeHtml(r.loc || '-')}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.injured || '-')}</td><td>${escapeHtml(r.desc)}</td>
             <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button></td></tr>
-        `).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No reports yet.</td></tr>';
+        `).join('') || '<tr><td colspan="9" style="text-align:center;color:grey">No reports yet.</td></tr>';
     }
     function deleteReport(id){
       LocalDB.set('reports', LocalDB.get('reports', []).filter(r => r.id !== id));
-      renderDashboard(); refreshStats();
+      renderDashboard(); refreshStats(); renderFactories();
     }
     async function submitIncident(e) {
         e.preventDefault();
@@ -2240,18 +2313,22 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
             date: document.getElementById('rDate').value,
             name: document.getElementById('rName').value,
             loc: document.getElementById('rLoc').value,
+            factory: document.getElementById('rFactory').value,
             type: document.getElementById('rType').value,
             sev: document.getElementById('rSev').value,
+            injured: document.getElementById('rInjured').value.trim(),
             desc: document.getElementById('rDesc').value
         };
         const list = LocalDB.get('reports');
         list.push(report);
         LocalDB.set('reports', list);
-        logActivity(`${report.type} reported`, `${report.sev} severity at ${report.loc || 'unspecified location'}`);
+        logActivity(`${report.type} reported`, `${report.sev} severity at ${report.factory || 'unspecified unit'} — ${report.loc || 'unspecified location'}`);
         alert(report.type + ' submitted');
         e.target.reset();
+        toggleInjuredField();
         renderDashboard();
         refreshStats();
+        renderFactories();
     }
 
     // --- PPE STOCK & ISSUE LOGIC ---
@@ -2445,6 +2522,7 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
           time: new Date().toLocaleTimeString(),
           ppe: ppe.join(', '),
           person: document.getElementById('visPersonMeet').value,
+          personEmail: document.getElementById('visPersonEmail').value.trim(),
           purpose: document.getElementById('visPurpose').value
         };
         const list = LocalDB.get('visitors');
@@ -2456,16 +2534,73 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
         const list = LocalDB.get('visitors', []);
         document.querySelector('#visitorTable tbody').innerHTML = list.map(v => `
             <tr><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.company)}</td><td>${escapeHtml(v.mobile||'')}</td>
-              <td>${escapeHtml(v.time)}</td><td>${escapeHtml(v.brief||'No')}</td><td>${escapeHtml(v.ppe||'')}</td><td>${escapeHtml(v.factory)}</td>
-              <td><button class="ghost-dark btn-sm" onclick="reprintVisitorCertificate(${v.id})">🖨️ Certificate</button>
+              <td>${escapeHtml(v.person||'-')}</td><td>${escapeHtml(v.time)}</td><td>${escapeHtml(v.brief||'No')}</td><td>${escapeHtml(v.ppe||'')}</td><td>${escapeHtml(v.factory)}</td>
+              <td style="white-space:nowrap"><button class="ghost-dark btn-sm" onclick="reprintVisitorCertificate(${v.id})">🖨️ Certificate</button>
+              <button class="btn-action btn-sm officer-only" onclick="openMailVisitorPass(${v.id})">✉ Mail Pass</button>
               <button class="btn-danger btn-sm admin-only" onclick="deleteVisitor(${v.id})">Delete</button></td></tr>
-        `).join('') || '<tr><td colspan="8" style="text-align:center;color:grey">No visitors logged yet.</td></tr>';
+        `).join('') || '<tr><td colspan="9" style="text-align:center;color:grey">No visitors logged yet.</td></tr>';
     }
     function reprintVisitorCertificate(id) {
       const v = LocalDB.get('visitors', []).find(x => x.id === id);
       if (v) generateVisitorCertificate(v);
     }
     function deleteVisitor(id){ LocalDB.set('visitors', LocalDB.get('visitors', []).filter(v => v.id !== id)); renderVisitors();
+    }
+
+    // Emails a PDF copy of the visitor pass to the person being visited.
+    // The PDF itself is built server-side (Code.gs, createVisitorPassPdf) since
+    // Apps Script can generate a real PDF via DocumentApp — this button just
+    // collects/confirms the recipient and message, then hands the visitor
+    // record to the backend to build and attach the PDF.
+    function openMailVisitorPass(id) {
+      const v = LocalDB.get('visitors', []).find(x => x.id === id);
+      if (!v) return;
+      mailingVisitorId = id;
+      document.getElementById('mailVisitorPassPreview').innerHTML =
+        `Pass for <b>${escapeHtml(v.name)}</b> (${escapeHtml(v.company||'-')}) meeting <b>${escapeHtml(v.person||'-')}</b> at ${escapeHtml(v.factory||'-')}`;
+      document.getElementById('mailVisitorPassTo').value = v.personEmail || '';
+      document.getElementById('mailVisitorPassSubject').value = `Visitor Pass — ${v.name} (${v.company||''})`;
+      document.getElementById('mailVisitorPassBody').value =
+`Dear ${v.person || 'Team'},
+
+Please find attached the visitor pass for ${v.name} from ${v.company || '-'}, who has arrived to meet you at ${v.factory || '-'}.
+
+Purpose of Visit: ${v.purpose || '-'}
+Mobile: ${v.mobile || '-'}
+Time In: ${v.time || '-'}
+
+Regards,
+TARSONS HSE Portal`;
+      document.getElementById('mailVisitorPassModal').style.display = 'flex';
+    }
+    async function sendVisitorPassEmail() {
+      const to = document.getElementById('mailVisitorPassTo').value.trim();
+      if (!to) { alert('Please enter the recipient email address.'); return; }
+      const v = LocalDB.get('visitors', []).find(x => x.id === mailingVisitorId);
+      if (!v) { alert('Visitor record not found.'); return; }
+      const subject = document.getElementById('mailVisitorPassSubject').value.trim();
+      const msgBody = document.getElementById('mailVisitorPassBody').value;
+      const btn = document.querySelector('#mailVisitorPassBox button.primary');
+      if (btn) { btn.disabled = true; btn.innerText = 'Sending...'; }
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'mailVisitorPass', to, subject, body: msgBody, visitor: v })
+        });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'ok') {
+          logActivity('Visitor pass emailed', `${v.name} → ${to}`);
+          alert('Visitor pass emailed to ' + to);
+          document.getElementById('mailVisitorPassModal').style.display = 'none';
+        } else {
+          alert('Could not send email: ' + ((json && json.message) || 'unknown error') + '\n\nMake sure Code.gs has been redeployed with the mailVisitorPass action.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not reach the mail service — check your connection or the Apps Script deployment.');
+      }
+      if (btn) { btn.disabled = false; btn.innerText = 'Send Email'; }
     }
 
     // --- Emergency & ERT Contacts ---
@@ -2747,25 +2882,52 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
         LocalDB.set('waste', list);
         e.target.reset(); renderWaste();
     }
+    // Maps a waste entry's category to a display label and whether it's
+    // hazardous. The 4 values below (5.1/5.2/33.1/General) are what the form
+    // now offers; the "legacy" entries keep older records (saved before this
+    // category rework) readable in the log instead of showing a blank cell.
+    function wasteTypeInfo(type) {
+      const map = {
+        '5.1': { label: '5.1 – Used/Spent Oil', hazardous: true },
+        '5.2': { label: '5.2 – Oily Waste/Residue', hazardous: true },
+        '33.1': { label: '33.1 – Container Decon. Residue', hazardous: true },
+        'General': { label: 'General (Recyclable)', hazardous: false },
+        'Hazardous': { label: 'Hazardous (Legacy)', hazardous: true },
+        'Plastic': { label: 'Plastic/Packaging (Legacy)', hazardous: false },
+        'Bio-Medical': { label: 'Bio-Medical (Legacy)', hazardous: true },
+        'E-Waste': { label: 'E-Waste (Legacy)', hazardous: false }
+      };
+      return map[type] || { label: type || '-', hazardous: false };
+    }
     function renderWaste(){
         const list = LocalDB.get('waste', []);
-        let haz = 0, rec = 0;
+        let haz51 = 0, haz52 = 0, haz331 = 0, gen = 0;
         list.forEach(w => {
             const signedQty = (w.entryType === 'Disposed' ? -1 : 1) * (w.qty || 0);
-            if(w.type === 'Hazardous' || w.type === 'Bio-Medical') haz += signedQty;
-            else rec += signedQty;
+            if (w.type === '5.1') haz51 += signedQty;
+            else if (w.type === '5.2') haz52 += signedQty;
+            else if (w.type === '33.1') haz331 += signedQty;
+            else if (w.type === 'General') gen += signedQty;
+            // Legacy-typed entries (Hazardous/Plastic/Bio-Medical/E-Waste, saved
+            // before this category rework) still show in the log below, but
+            // aren't folded into the 4 new stock tiles — we can't know which of
+            // 5.1/5.2/33.1 they actually were. Re-log any still-on-site stock
+            // under the new categories so it's counted correctly.
         });
-        document.getElementById('wasteHazTotal').innerText = haz.toFixed(2);
-        document.getElementById('wasteRecTotal').innerText = rec.toFixed(2);
+        document.getElementById('wasteHaz51Total').innerText = haz51.toFixed(2);
+        document.getElementById('wasteHaz52Total').innerText = haz52.toFixed(2);
+        document.getElementById('wasteHaz331Total').innerText = haz331.toFixed(2);
+        document.getElementById('wasteRecTotal').innerText = gen.toFixed(2);
         
         document.querySelector('#wasteTable tbody').innerHTML = list.map(w => {
             const entryType = w.entryType || 'Disposed';
             const badgeCls = entryType === 'Stored' ? 'status-safe' : 'status-expired';
-            return `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.factory)}</td><td>${escapeHtml(w.type)}</td>
+            const info = wasteTypeInfo(w.type);
+            return `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.factory)}</td><td>${escapeHtml(info.label)}</td>
              <td><span class="status-badge ${badgeCls}">${escapeHtml(entryType)}</span></td>
              <td>${w.qty}</td><td>${escapeHtml(w.method)}</td>
              <td class="admin-only"><button class="btn-danger btn-sm" onclick="deleteWaste(${w.id})">Delete</button></td></tr>`;
-        }).join('');
+        }).join('') || '<tr><td colspan="7" style="text-align:center;color:grey">No waste entries logged yet.</td></tr>';
     }
     function deleteWaste(id){ if(!confirm('Delete waste record?')) return; LocalDB.set('waste', LocalDB.get('waste', []).filter(w => w.id !== id)); renderWaste(); }
 
@@ -3122,7 +3284,14 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
       if (lower.includes('incident')) {
         const reports = LocalDB.get('reports', []).filter(r => !r.type || r.type === 'Incident');
         const thisMonth = reports.filter(r => { const d = new Date(r.date); return !isNaN(d) && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear(); }).length;
-        return `${reports.length} incidents logged in total, ${thisMonth} this month. You can submit a new one, or view/edit details, in the Incidents tab.`;
+        return `${reports.length} incidents logged in total, ${thisMonth} this month. You can submit a new one, or view/edit details, in the Incidents/Accidents tab.`;
+      }
+
+      // Accidents
+      if (lower.includes('accident')) {
+        const reports = LocalDB.get('reports', []).filter(r => r.type === 'Accident');
+        const injured = reports.filter(r => r.injured).length;
+        return `${reports.length} accident(s) logged, ${injured} with a named injured person on record. Accidents count toward Safe Days and Accident Ratio, the same as Incidents.`;
       }
 
       // Fire extinguishers — overdue check
@@ -3180,8 +3349,11 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
 
       // Waste
       if (lower.includes('waste') || lower.includes('disposal') || lower.includes('hazardous')) {
-        const list = LocalDB.get('waste', []);
-        return `${list.length} waste log entries recorded. See Waste Mgmt for the full log — Admins can add new entries there.`;
+        const h51 = document.getElementById('wasteHaz51Total') ? document.getElementById('wasteHaz51Total').innerText : '0';
+        const h52 = document.getElementById('wasteHaz52Total') ? document.getElementById('wasteHaz52Total').innerText : '0';
+        const h331 = document.getElementById('wasteHaz331Total') ? document.getElementById('wasteHaz331Total').innerText : '0';
+        const gen = document.getElementById('wasteRecTotal') ? document.getElementById('wasteRecTotal').innerText : '0';
+        return `Current on-site hazardous stock — 5.1: ${h51} Kg, 5.2: ${h52} Kg, 33.1: ${h331} Kg. General/recyclable waste: ${gen} Kg. See Waste Mgmt for the full log.`;
       }
 
       // Training
@@ -3301,6 +3473,9 @@ Please log in to the HSE Portal (Admin → Complaints/Suggestions) to update the
     window.exportTableToExcel = exportTableToExcel;
     window.showExtinguisherQR = showExtinguisherQR;
     window.toggleTheme = toggleTheme;
+    window.toggleInjuredField = toggleInjuredField;
+    window.openMailVisitorPass = openMailVisitorPass;
+    window.sendVisitorPassEmail = sendVisitorPassEmail;
     window.toggleComplaintBox = toggleComplaintBox;
     window.addComplaint = addComplaint;
     window.goToComplaintsAdmin = goToComplaintsAdmin;
